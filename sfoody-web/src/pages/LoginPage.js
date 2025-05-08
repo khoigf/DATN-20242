@@ -1,35 +1,73 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './AuthPage.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const BASE_URL = process.env.REACT_APP_API;
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem('token', data.token);
-      navigate('/');
-    } else {
-      alert(data.msg || 'Đăng nhập thất bại');
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.user.role);
+        if (data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } else {
+        setMessage(data.msg || 'Lỗi đăng nhập');
+      }
+    } catch (error) {
+      setMessage('Lỗi hệ thống. Vui lòng thử lại sau.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form className="bg-white p-6 rounded-md shadow-md w-full max-w-sm" onSubmit={handleSubmit}>
-        <h2 className="text-2xl font-bold mb-4">Đăng nhập</h2>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="mb-3 w-full p-2 border rounded" required />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mật khẩu" className="mb-4 w-full p-2 border rounded" required />
-        <button className="w-full bg-blue-600 text-white py-2 rounded">Đăng nhập</button>
-      </form>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2>Đăng nhập</h2>
+        {message && <p className="auth-message">{message}</p>}
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+          <button type="submit">Đăng nhập</button>
+          <div className="auth-link">
+            <Link to="/forgot-password">Quên mật khẩu?</Link>
+          </div>
+          <div className="auth-link">
+            Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+          </div>
+          <div className="auth-link">
+            <Link to="/">← Quay lại trang chủ</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

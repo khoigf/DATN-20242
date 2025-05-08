@@ -7,6 +7,10 @@ const { sendVerificationEmail, sendResetEmail } = require('../utils/mailer');
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({ msg: 'Thiếu thông tin đăng ký' });
+    }
+
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ msg: 'Email đã tồn tại' });
 
@@ -16,10 +20,15 @@ exports.register = async (req, res) => {
     const user = new User({ username, email, password: hashed, verifyToken });
     await user.save();
 
-    await sendVerificationEmail(email, verifyToken);
-    res.status(201).json({ msg: 'Đăng ký thành công, vui lòng kiểm tra email để xác minh' });
+    try {
+      await sendVerificationEmail(email, verifyToken);
+      res.status(201).json({ msg: 'Đăng ký thành công! Vui lòng kiểm tra email để xác minh.' });
+    } catch (mailErr) {
+      console.error('Lỗi gửi email:', mailErr);
+      res.status(500).json({ msg: 'Lỗi gửi email xác minh' });
+    }
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ msg: 'Lỗi hệ thống: ' + err.message });
   }
 };
 
@@ -42,6 +51,8 @@ exports.login = async (req, res) => {
     if (!user) return res.status(404).json({ msg: 'Không tìm thấy người dùng' });
 
     if (!user.isVerified) return res.status(403).json({ msg: 'Vui lòng xác minh email trước khi đăng nhập' });
+
+    if (user.status === 0) return res.status(403).json({ msg: 'Tài khoản của bạn đã bị khóa' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ msg: 'Sai mật khẩu' });

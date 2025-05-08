@@ -1,37 +1,71 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './AuthPage.css';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState(''); // 👉 thêm state cho thông báo
   const navigate = useNavigate();
+  const BASE_URL = process.env.REACT_APP_API || '';
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert('Đăng ký thành công');
-      navigate('/login');
-    } else {
-      alert(data.msg || 'Đăng ký thất bại');
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage(data.msg);
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        setMessage(data.msg || 'Đăng ký thất bại');
+      }
+    } catch (error) {
+      setMessage('Lỗi hệ thống. Vui lòng thử lại sau.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form className="bg-white p-6 rounded-md shadow-md w-full max-w-sm" onSubmit={handleSubmit}>
-        <h2 className="text-2xl font-bold mb-4">Đăng ký</h2>
-        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Tên người dùng" className="mb-3 w-full p-2 border rounded" required />
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="mb-3 w-full p-2 border rounded" required />
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mật khẩu" className="mb-4 w-full p-2 border rounded" required />
-        <button className="w-full bg-green-600 text-white py-2 rounded">Đăng ký</button>
-      </form>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2>Đăng ký</h2>
+        {message && (
+          <p className="auth-message">{message}</p> // 👉 hiển thị thông báo
+        )}
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="Tên người dùng"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Đăng ký</button>
+          <div className="auth-link">
+            Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

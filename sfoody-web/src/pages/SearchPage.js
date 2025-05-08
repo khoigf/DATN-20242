@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import RecipeModal from '../components/RecipeModal';
 
-export default function HomePage() {
+export default function SearchPage() {
+  const [tags, setTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const navigate = useNavigate();
@@ -12,10 +14,22 @@ export default function HomePage() {
   const BASE_URL = process.env.REACT_APP_API;
 
   useEffect(() => {
-    fetch(`${BASE_URL}/recipes`)
+    fetch(`${BASE_URL}/tags`)
+      .then(res => res.json())
+      .then(data => setTags(data));
+  }, [BASE_URL]);
+
+  const handleTagToggle = (tagId) => {
+    setSelectedTags(prev =>
+      prev.includes(tagId) ? prev.filter(t => t !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleSearch = () => {
+    fetch(`${BASE_URL}/recipes?tags=${selectedTags.join(',')}`)
       .then(res => res.json())
       .then(data => setRecipes(data));
-  }, [BASE_URL]);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -26,25 +40,20 @@ export default function HomePage() {
   return (
     <div className="home-container">
       <aside className="sidebar">
-        <Link to="/" className="logo">
-          <img src="/logo.png" alt="S-Foody" width={50} height={50} />
-        </Link>
+        <Link to="/" className="logo"><img src="/logo.png" alt="S-Foody" width={50} height={50} /></Link>
         <div className="sidebar-icons">
-          <Link to="/"><button>🏠 Trang chủ</button></Link>
-          <Link to="/recipes/manage"><button>📃 Quản lý</button></Link>
-          <Link to="/search"><button>🔍 Tìm kiếm</button></Link>
-          <Link to="#"><button>⚙️ Cài đặt</button></Link>
-          {token && role === 'admin' && (
-            <Link to="/admin"><button>👤 Admin</button></Link>
-          )}
+          <Link to="/"><button>🏠</button></Link>
+          <Link to="/recipes/manage"><button>📃</button></Link>
+          <Link to="/search"><button>🔍</button></Link>
+          <Link to="#"><button>⚙️</button></Link>
         </div>
       </aside>
 
       <main className="main-content">
         <header className="main-header">
           <div>
-            <h1 className="title">S-Foody</h1>
-            <p className="subtitle">Hôm nay ăn gì?</p>
+            <h1 className="title">Tìm kiếm món ăn</h1>
+            <p className="subtitle">Lọc theo sở thích, nguyên liệu, chế độ ăn...</p>
           </div>
           <div className="auth-buttons">
             {token ? (
@@ -63,11 +72,26 @@ export default function HomePage() {
           </div>
         </header>
 
+        <section className="search-section">
+          <div className="tag-filters">
+            {tags.map(tag => (
+              <button
+                key={tag._id}
+                className={`tag-btn ${selectedTags.includes(tag._id) ? 'selected' : ''}`}
+                onClick={() => handleTagToggle(tag._id)}
+              >
+                {tag.name}
+              </button>
+            ))}
+          </div>
+          <button onClick={handleSearch} className="search-btn">🔍 Tìm kiếm</button>
+        </section>
+
         <section className="feed-section">
-          <h2 className="feed-title">🆕 Bài viết mới</h2>
+          <h2 className="feed-title">Kết quả tìm kiếm</h2>
           <div className="recipe-grid">
             {recipes.map(recipe => (
-              <div onClick={() => setSelectedRecipe(recipe)} key={recipe._id} className="recipe-card">
+              <div key={recipe._id} className="recipe-card" onClick={() => setSelectedRecipe(recipe)}>
                 <img src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} className="recipe-image" />
                 <div className="recipe-content">
                   <h2 className="recipe-title">{recipe.title}</h2>
@@ -77,11 +101,10 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+        {selectedRecipe &&(
+            <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
+        )}    
       </main>
-
-      {selectedRecipe && (
-        <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
-      )}
     </div>
   );
 }

@@ -6,6 +6,12 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ManageRecipes from './pages/ManageRecipes';
+import SearchPage from './pages/SearchPage';
+import AdminDashboard from './pages/AdminDashboard';
+import UserList from './pages/UserList';
+import PostList from './pages/PostList';
+import ReportList from './pages/ReportList';
 
 function App() {
   return (
@@ -17,6 +23,13 @@ function App() {
         <Route path="/verify" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/recipes/manage" element={<ManageRecipes />} />
+        <Route path="/search" element={<SearchPage />} />
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UserList />} />
+        <Route path="/admin/posts" element={<PostList />} />
+        <Route path="/admin/reports" element={<ReportList />} />
       </Routes>
     </Router>
   );

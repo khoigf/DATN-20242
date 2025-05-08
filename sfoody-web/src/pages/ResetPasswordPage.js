@@ -1,30 +1,38 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import './AuthPage.css';
 
 export default function ResetPasswordPage() {
-  const [searchParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const token = params.get('token');
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const BASE_URL = process.env.REACT_APP_API;
 
-  const handleSubmit = async (e) => {
+  const handleReset = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/reset-password', {
+    const res = await fetch(`${BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: searchParams.get('token'), newPassword: password })
+      body: JSON.stringify({ token, newPassword: password })
     });
     const data = await res.json();
-    setMessage(data.msg || 'Lỗi khi đặt lại mật khẩu');
+    setMessage(data.message || 'Mật khẩu đã được cập nhật.');
+    setMessage(data.msg);
+    setTimeout(() => navigate('/login'), 1500);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form className="bg-white p-6 rounded shadow w-full max-w-md" onSubmit={handleSubmit}>
-        <h2 className="text-xl font-bold mb-4">Đặt lại mật khẩu</h2>
-        <input type="password" className="w-full p-2 mb-3 border rounded" placeholder="Mật khẩu mới" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button className="w-full bg-green-600 text-white py-2 rounded">Xác nhận</button>
-        {message && <p className="mt-4 text-green-600">{message}</p>}
-      </form>
+    <div className="auth-container">
+      <div className="auth-box">
+        <h2>Đặt lại mật khẩu</h2>
+        <form onSubmit={handleReset}>
+          <input type="password" placeholder="Mật khẩu mới" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button type="submit">Đặt lại</button>
+        </form>
+        {message && <p>{message}</p>}
+      </div>
     </div>
   );
 }
