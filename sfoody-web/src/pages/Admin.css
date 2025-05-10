@@ -86,6 +86,7 @@
   }
   
   .admin-sidebar-footer {
+    text-decoration: none;
     margin-top: auto;
     display: flex;
     flex-direction: column;

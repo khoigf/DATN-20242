@@ -64,8 +64,7 @@ exports.getPostById = async (req, res) => {
     const averageRating = comments.length
       ? (comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length).toFixed(1)
       : null;
-    post.averageRating = averageRating;
-    res.json({ ...post.toObject(), comments });
+    res.json({ ...post.toObject(), comments, averageRating });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

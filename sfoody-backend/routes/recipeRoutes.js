@@ -2,8 +2,28 @@ const express = require('express');
 const router = express.Router();
 const recipeController = require('../controllers/recipeController');
 const { verifyToken } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
 
-router.post('/',verifyToken, recipeController.createRecipe);
+// Cấu hình lưu file
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/'); // thư mục lưu trữ
+    },
+    filename: function (req, file, cb) {
+      const ext = path.extname(file.originalname);
+      cb(null, Date.now() + '-' + file.fieldname + ext);
+    },
+  });
+  const upload = multer({
+    storage,
+    limits: { fileSize: 20 * 1024 * 1024 }, // tối đa 20MB
+  });
+
+router.post('/',verifyToken, upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'video', maxCount: 1 },
+  ]), recipeController.createRecipe);
 router.get('/',recipeController.getAllRecipes);
 router.get('/:id', recipeController.getRecipeById);
 router.put('/:id',verifyToken, recipeController.updateRecipe);

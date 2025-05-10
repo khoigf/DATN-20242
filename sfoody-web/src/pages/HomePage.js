@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
+import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
+import CreateRecipeModal from '../components/CreatePostCard';
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
@@ -24,64 +29,67 @@ export default function HomePage() {
   };
 
   return (
-    <div className="home-container">
-      <aside className="sidebar">
-        <Link to="/" className="logo">
-          <img src="/logo.png" alt="S-Foody" width={50} height={50} />
-        </Link>
-        <div className="sidebar-icons">
-          <Link to="/"><button>🏠 Trang chủ</button></Link>
-          <Link to="/recipes/manage"><button>📃 Quản lý</button></Link>
-          <Link to="/search"><button>🔍 Tìm kiếm</button></Link>
-          <Link to="#"><button>⚙️ Cài đặt</button></Link>
-          {token && role === 'admin' && (
-            <Link to="/admin"><button>👤 Admin</button></Link>
+    <div className="home-layout">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+
+      <header className="sticky-header">
+        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+        <div className="brand-area">
+            <Link to="/" className="logo">
+              <img src="/logo.png" alt="S-Foody" width={50} height={50} />
+            </Link>
+            <div className="text-group">
+              <h1 className="title">S-Foody</h1>
+              <p className="subtitle">Hôm nay ăn gì?</p>
+            </div>
+          </div>
+        <div className="auth-actions">
+          {token ? (
+            <>
+              {role === 'user' && (
+                <Link to="/recipes/manage" className="manage-btn">Quản lý</Link>
+              )}
+              <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="manage-btn">Đăng nhập</Link>
+              <Link to="/register" className="manage-btn">Đăng ký</Link>
+            </>
           )}
         </div>
-      </aside>
+      </header>
 
-      <main className="main-content">
-        <header className="main-header">
-          <div>
-            <h1 className="title">S-Foody</h1>
-            <p className="subtitle">Hôm nay ăn gì?</p>
-          </div>
-          <div className="auth-buttons">
-            {token ? (
-              <>
-                <button onClick={handleLogout} className="logout">Đăng xuất</button>
-                {role === 'user' && (
-                  <Link to="/recipes/manage" className="manage-btn">Quản lý bài viết</Link>
-                )}
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="login">Đăng nhập</Link>
-                <Link to="/register" className="register">Đăng ký</Link>
-              </>
-            )}
-          </div>
-        </header>
-
-        <section className="feed-section">
-          <h2 className="feed-title">🆕 Bài viết mới</h2>
-          <div className="recipe-grid">
-            {recipes.map(recipe => (
-              <div onClick={() => setSelectedRecipe(recipe)} key={recipe._id} className="recipe-card">
-                <img src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} className="recipe-image" />
-                <div className="recipe-content">
-                  <h2 className="recipe-title">{recipe.title}</h2>
-                  <p className="recipe-desc">{recipe.description}</p>
-                </div>
+      <main className="feed-main">
+        <div className="feed-column">
+          {token && (
+            <button className="create-btn" onClick={() => setShowCreateModal(true)}>
+              Viết công thức mới ✍️
+            </button>
+          )}
+          <h2 className="feed-title">🆕 Công thức mới</h2>
+          {recipes.map(recipe => (
+            <div className="recipe-card" key={recipe._id} onClick={() => setSelectedRecipe(recipe)}>
+              <img className="recipe-img" src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} />
+              <div className="recipe-info">
+                <h3>{recipe.title}</h3>
+                <p>{recipe.description}</p>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          ))}
+        </div>
+        <aside className="right-column">
+          <h3 className="sidebar-title">Gợi ý hôm nay</h3>
+          <p>🍲 Khám phá món ăn mới mỗi ngày!</p>
+          {/* Future: top recipes, authors */}
+        </aside>
       </main>
 
       {selectedRecipe && (
         <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
       )}
+
+      {showCreateModal && <CreateRecipeModal onClose={() => setShowCreateModal(false)} />}
     </div>
   );
 }

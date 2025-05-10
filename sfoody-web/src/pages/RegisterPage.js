@@ -45,6 +45,7 @@ export default function RegisterPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            autoComplete="current-name"
           />
           <input
             type="email"
@@ -52,6 +53,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="current-email"
           />
           <input
             type="password"
@@ -59,6 +61,7 @@ export default function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
           <button type="submit">Đăng ký</button>
           <div className="auth-link">

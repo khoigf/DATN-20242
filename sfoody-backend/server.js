@@ -17,10 +17,17 @@ connectDB();
 const app = express();
 app.use(express.json());
 
+const path = require('path');
+
+// Serve thư mục uploads cho client
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(cors({
-    origin: 'http://localhost:3000', // hoặc '*' nếu bạn muốn cho phép tất cả
-    credentials: true
+    origin: '*'
 }));
+
+const compression = require('compression');
+app.use(compression());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);

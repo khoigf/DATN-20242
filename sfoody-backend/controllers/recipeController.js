@@ -5,7 +5,24 @@ const index = client.index('recipes');
 
 exports.createRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.create({ ...req.body, user_id: req.user.id });
+    const {
+      title, description, instruction, prep_time, cook_time, servings,
+    } = req.body;
+
+    const image = req.files.image?.[0]?.filename;
+    const video = req.files.video?.[0]?.filename;
+
+    const recipe = new Recipe({
+      user_id: req.user.id,
+      title,
+      description,
+      instruction,
+      prep_time,
+      cook_time,
+      servings,
+      image_url: image ? `/uploads/${image}` : undefined,
+      video_url: video ? `/uploads/${video}` : undefined,
+    });
     await index.addDocuments([{
       id: recipe._id,
       title: recipe.title,
@@ -13,6 +30,7 @@ exports.createRecipe = async (req, res) => {
       tag_ids: recipe.tag_ids,
       user_id: recipe.user_id,
     }]);
+    await recipe.save();
     res.status(201).json(recipe);
   } catch (err) {
     res.status(500).json({ error: err.message });
