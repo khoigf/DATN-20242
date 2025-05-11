@@ -1,140 +1,161 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './HomePage.css'; // dùng chung CSS để đồng bộ
+import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
+import CreateRecipeModal from '../components/CreatePostCard';
+import { User, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import EditRecipeModal from '../components/EditRecipeModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import './HomePage.css';
 
-export default function ManageRecipes() {
+export default function ManageRecipePage() {
   const [recipes, setRecipes] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedRecipeId, setSelectedRecipeId] = useState(null);
-  const [editingRecipe, setEditingRecipe] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', image_url: '' });
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
-  const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
   const BASE_URL = process.env.REACT_APP_API;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
+    if (!token) navigate('/login');
     fetch(`${BASE_URL}/recipes/user`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then(setRecipes)
-      .catch(console.error);
+      .then((data) => setRecipes(data))
+      .catch((err) => console.error(err));
   }, [BASE_URL, token, navigate]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/');
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xoá bài viết này?')) return;
-
-    await fetch(`${BASE_URL}/recipes/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setRecipes((prev) => prev.filter((r) => r._id !== id));
-  };
-
-  const openModal = (recipe = null) => {
-    setEditingRecipe(recipe);
-    setForm(recipe ? {
-      title: recipe.title,
-      description: recipe.description,
-      image_url: recipe.image_url || '',
-    } : { title: '', description: '', image_url: '' });
-    setModalVisible(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const method = editingRecipe ? 'PUT' : 'POST';
-    const url = editingRecipe
-      ? `${BASE_URL}/recipes/${editingRecipe._id}`
-      : `${BASE_URL}/recipes`;
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
-    if (editingRecipe) {
-      setRecipes((prev) => prev.map((r) => (r._id === data._id ? data : r)));
-    } else {
-      setRecipes((prev) => [data, ...prev]);
-    }
-
-    setModalVisible(false);
-    setEditingRecipe(null);
-  };
+  setConfirmDialog({
+    title: 'Xác nhận xóa',
+    message: 'Bạn có chắc chắn muốn xóa công thức này?',
+    onConfirm: async () => {
+      try {
+        await fetch(`${BASE_URL}/recipes/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRecipes(recipes.filter((r) => r._id !== id));
+      } catch (error) {
+        console.error(error);
+      }
+      setConfirmDialog(null);
+    },
+    onCancel: () => setConfirmDialog(null),
+  });
+};
 
   return (
-    <div className="main-content">
-      <h2>Quản lý công thức của tôi</h2>
-      <button onClick={() => openModal()} className="btn-create">➕ Viết công thức mới</button>
+    <div className="home-layout">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
 
-      <div className="recipe-grid">
-        {recipes.map((recipe) => (
-          <div key={recipe._id} className="recipe-card">
-            <img src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} />
-            <h3>{recipe.title}</h3>
-            <p>{recipe.description}</p>
-            <div className="actions">
-              <button onClick={() => setSelectedRecipeId(recipe._id)} className="btn-view">👁 Xem</button>
-              <button onClick={() => openModal(recipe)} className="btn">✏️ Sửa</button>
-              <button onClick={() => handleDelete(recipe._id)} className="btn-danger">🗑️ Xoá</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {modalVisible && (
-        <div className="modal-overlay" onClick={() => setModalVisible(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>{editingRecipe ? 'Chỉnh sửa công thức' : 'Tạo công thức mới'}</h3>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Tiêu đề"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                required
-              />
-              <textarea
-                placeholder="Mô tả"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                required
-              />
-              <input
-                type="text"
-                placeholder="URL hình ảnh"
-                value={form.image_url}
-                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-              />
-              <div className="modal-actions">
-                <button type="submit" className="btn-success">💾 Lưu</button>
-                <button type="button" className="btn-cancel" onClick={() => setModalVisible(false)}>❌ Huỷ</button>
-              </div>
-            </form>
+      <header className="sticky-header">
+        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+        <div className="brand-area">
+          <img src="/logo.png" alt="S-Foody" width={50} height={50} />
+          <div className="text-group">
+            <h1 className="title">Quản lý công thức</h1>
+            <p className="subtitle">Bài viết của bạn</p>
           </div>
         </div>
+        <div className="auth-actions">
+                  {token ? (
+                    <>
+                      {role === 'user' && (
+                        <Link to="/recipes/manage" className="manage-btn">
+                          <User size={18} style={{ marginRight: '0px' }} />
+                        </Link>
+                      )}
+                      <button onClick={handleLogout} className="logout-btn">
+                        <LogOut size={18} style={{ marginRight: '8px' }} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" className="manage-btn">Đăng nhập</Link>
+                      <Link to="/register" className="manage-btn">Đăng ký</Link>
+                    </>
+                  )}
+                </div>
+      </header>
+
+      <main className="feed-main">
+        <div className="feed-column">
+          <button className="create-btn" onClick={() => setShowCreateModal(true)}>
+            Tạo công thức mới ✍️
+          </button>
+          <h2 className="feed-title">📋 Công thức của tôi</h2>
+          {recipes.length === 0 && <p>Chưa có công thức nào.</p>}
+          {recipes.map((recipe) => (
+            <div className="recipe-card" key={recipe._id}>
+              <img
+                className="recipe-img"
+                src={recipe.image_url || '/default-recipe.jpg'}
+                alt={recipe.title}
+                onClick={() => setSelectedRecipe(recipe)}
+              />
+              <div className="recipe-info">
+                <h3>{recipe.title}</h3>
+                <p>{recipe.description}</p>
+                <div className="card-actions">
+                  <button className="view-btn" onClick={() => setSelectedRecipe(recipe)} title="Xem chi tiết">
+                    👁️
+                  </button>
+                  <button className="edit-btn" onClick={() => setShowCreateModal(recipe)} title="Chỉnh sửa">
+                    ✏️
+                  </button>
+                  <button className="delete-btn" onClick={() => handleDelete(recipe._id)} title="Xóa bài viết">
+                    🗑️
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+        <aside className="right-column">
+          <h3 className="sidebar-title">Gợi ý hôm nay</h3>
+          <p>🍲 Khám phá món ăn mới mỗi ngày!</p>
+          {/* Future: top recipes, authors */}
+        </aside>
+      </main>
+
+      {selectedRecipe && (
+        <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
       )}
 
-      {selectedRecipeId && (
-        <RecipeModal
-          recipeId={selectedRecipeId}
-          onClose={() => setSelectedRecipeId(null)}
+      {showCreateModal && (
+        typeof showCreateModal === 'object' ? (
+          <EditRecipeModal recipe={showCreateModal} onClose={(refresh) => {
+            if (refresh) window.location.reload(); // hoặc refetch dữ liệu
+            setShowCreateModal(false);
+          }} />
+        ) : (
+          <CreateRecipeModal onClose={() => setShowCreateModal(false)} />
+        )
+      )}
+
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
         />
       )}
+      
     </div>
   );
 }

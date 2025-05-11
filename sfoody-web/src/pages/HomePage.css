@@ -91,7 +91,41 @@
 .logout-btn:hover {
   background-color: #dc2626;
 }
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
 
+.card-actions button {
+  border: none;
+  background-color: #eee;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.card-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.view-btn {
+  background-color: #e0f7fa;
+  color: #006064;
+}
+
+.edit-btn {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.delete-btn {
+  background-color: #ffebee;
+  color: #c62828;
+}
 /* Main Feed */
 .feed-main {
   display: flex;
@@ -146,6 +180,17 @@
   color: #1e293b;
 }
 
+ .create-btn{
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+ }
+
 /* Right Sidebar */
 .right-column {
   width: 250px;
@@ -164,9 +209,9 @@
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 480px) {
   .right-column {
-    display: none;
+    display: flex;
   }
 }
 

@@ -1,152 +1,170 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './HomePage.css'; // dùng layout & card chung
+import RecipeModal from '../components/RecipeModal';
+import { User, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import Sidebar from '../components/HomeSidebar';
+
+const BASE_URL = process.env.REACT_APP_API;
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
-  const [groupedTags, setGroupedTags] = useState({});
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [tags, setTags] = useState({});
   const [selectedTags, setSelectedTags] = useState([]);
-  const [results, setResults] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [popularTags, setPopularTags] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
+
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
 
   useEffect(() => {
-    fetch('/api/tags/grouped')
-      .then(res => res.json())
-      .then(setGroupedTags)
-      .catch(console.error);
+    fetch(`${BASE_URL}/tags/grouped`)
+      .then((res) => res.json())
+      .then((data) => setTags(data));
+
+    fetch(`${BASE_URL}/tags`)
+      .then((res) => res.json())
+      .then((data) => {
+        const top = data.slice(0, 10); // giả định lấy 10 tag phổ biến
+        setPopularTags(top);
+      });
   }, []);
 
-  const handleTagClick = (tagName) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagName)
-        ? prev.filter(t => t !== tagName)
-        : [...prev, tagName]
-    );
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/');
   };
 
-  const handleSearch = async () => {
-    const queryString = new URLSearchParams({
-      q: query,
-      filters: selectedTags.join(','),
-    }).toString();
+  const fetchRecipes = (query, tagList) => {
+    setLoading(true);
+    setNoResults(false);
+    const filters = tagList.length > 0 ? `filters=${tagList.join(',')}` : '';
+    fetch(`${BASE_URL}/search?q=${query}&${filters}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setLoading(false);
+        if (data.length === 0) {
+          setNoResults(true);
+        } else {
+          setRecipes(data);
+        }
+      });
+  };
 
-    const res = await fetch(`/api/search?${queryString}`, {
-      method: 'POST',
-    });
-    const data = await res.json();
-    setResults(data);
+  const handleTagClick = (tagName) => {
+    const newTags = selectedTags.includes(tagName)
+      ? selectedTags.filter((tag) => tag !== tagName)
+      : [...selectedTags, tagName];
+    setSelectedTags(newTags);
+    fetchRecipes(searchQuery, newTags);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchRecipes(searchQuery, selectedTags);
   };
 
   return (
     <div className="home-layout">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+      
       <header className="sticky-header">
-        <div className="app-title">S-Foody</div>
+        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+        <form onSubmit={handleSearch}>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Tìm công thức nấu ăn..."
+            style={{ padding: '0.5rem', borderRadius: '10px' }}
+          />
+          <button type="submit" className="manage-btn" style={{ marginLeft: '0.5rem' }}>Tìm</button>
+        </form>
         <div className="auth-actions">
-          <a href="/" className="auth-link">Trang chủ</a>
-          <a href="/login" className="auth-link">Đăng nhập</a>
+          {token ? (
+            <>
+              {role === 'user' && (
+                <Link to="/recipes/manage" className="manage-btn">
+                  <User size={18} />
+                </Link>
+              )}
+              <button onClick={handleLogout} className="logout-btn">
+                <LogOut size={18} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="manage-btn">Đăng nhập</Link>
+              <Link to="/register" className="manage-btn">Đăng ký</Link>
+            </>
+          )}
         </div>
       </header>
 
       <main className="feed-main">
-        {/* Cột chính */}
         <div className="feed-column">
-          <h2 className="feed-title">Tìm kiếm công thức</h2>
+          <h2 className="feed-title">Kết quả tìm kiếm</h2>
+          {loading && <p>Đang tìm kiếm...</p>}
+          {noResults && !loading && <p>Không có công thức phù hợp.</p>}
 
-          {/* Thanh tìm kiếm */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Nhập từ khóa..."
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-              }}
-            />
-            <button
-              onClick={handleSearch}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '0.5rem 1rem',
-                cursor: 'pointer',
-              }}
-            >
-              Tìm kiếm
-            </button>
-          </div>
-
-          {/* Bộ lọc Tag */}
-          {Object.entries(groupedTags).map(([category, tags]) => (
-            <div key={category} style={{ marginBottom: '1rem' }}>
-              <strong>{category}</strong>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
-                {tags.map(tag => (
-                  <button
-                    key={tag._id}
-                    onClick={() => handleTagClick(tag.name)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      border: selectedTags.includes(tag.name)
-                        ? 'none'
-                        : '1px solid #ccc',
-                      backgroundColor: selectedTags.includes(tag.name)
-                        ? '#2563eb'
-                        : 'white',
-                      color: selectedTags.includes(tag.name)
-                        ? 'white'
-                        : '#333',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                    }}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
+          {recipes.map((recipe) => (
+            <div className="recipe-card" key={recipe.id} onClick={() => setSelectedRecipe(recipe)}>
+              <img src={recipe.image_url || '/default-recipe.jpg'} className="recipe-img" alt="Recipe" />
+              <div className="recipe-info">
+                <h3>{recipe.title}</h3>
+                <p>{recipe.description}</p>
               </div>
             </div>
           ))}
 
-          {/* Kết quả */}
-          {results.length === 0 ? (
-            <p style={{ color: '#888', fontStyle: 'italic' }}>
-              Không có công thức nào phù hợp.
-            </p>
-          ) : (
-            results.map((recipe) => (
-              <div
-                key={recipe.id}
-                className="recipe-card"
-                onClick={() => navigate(`/recipes/${recipe.id}`)}
-              >
-                <img
-                  src={recipe.image_url || '/default-recipe.jpg'}
-                  alt={recipe.title}
-                  className="recipe-img"
-                />
-                <div className="recipe-info">
-                  <h3>{recipe.title}</h3>
-                  <p style={{ color: '#555', fontSize: '14px' }}>
-                    {recipe.description || 'Không có mô tả.'}
-                  </p>
-                </div>
-              </div>
-            ))
+          {selectedRecipe && (
+            <RecipeModal
+              recipe={selectedRecipe}
+              onClose={() => setSelectedRecipe(null)}
+            />
           )}
         </div>
 
-        {/* Sidebar phải (nếu cần dùng như HomeSidebar) */}
         <div className="right-column">
-          <div className="sidebar-title">Gợi ý phổ biến</div>
-          <p>• Gà chiên mắm</p>
-          <p>• Bánh mì pate</p>
-          <p>• Salad healthy</p>
+          <div>
+            <h3 className="sidebar-title">Bộ lọc theo tag</h3>
+            {Object.entries(tags).map(([category, tagList]) => (
+              <div key={category}>
+                <h4>{category}</h4>
+                <div className="tag-list">
+                  {tagList.map(tag => (
+                    <button
+                      key={tag._id}
+                      className={`tag-button ${selectedTags.includes(tag.name) ? 'selected' : ''}`}
+                      onClick={() => handleTagClick(tag.name)}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="tag-suggestions" style={{ marginTop: '1rem' }}>
+            <h4 className="sidebar-title">🔍 Gợi ý phổ biến:</h4>
+            <div className="tag-list">
+              {popularTags.map(tag => (
+                <button
+                  key={tag._id}
+                  className="tag-button"
+                  onClick={() => handleTagClick(tag.name)}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>

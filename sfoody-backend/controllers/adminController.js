@@ -48,6 +48,10 @@ exports.getAllPosts = async (req, res) => {
     Recipe.find({ title: { $regex: regex } }).skip(skip).limit(limit).populate('user_id', 'username email'),
     Recipe.countDocuments({ title: { $regex: regex } })
   ]);
+  posts.forEach(post => {
+    post.image_url = post.image_url ? `${process.env.IMAGE_URL}${post.image_url}` : null;
+    post.video_url = post.video_url ? `${process.env.IMAGE_URL}${post.video_url}` : null;
+  })
 
   res.json({ posts, total });
 };
@@ -57,6 +61,8 @@ exports.getPostById = async (req, res) => {
   try {
     const post = await Recipe.findById(id).populate('user_id', 'username email')
     if (!post) return res.status(404).json({ msg: 'Post not found' });
+    post.image_url = post.image_url ? `${process.env.IMAGE_URL}${post.image_url}` : null;
+    post.video_url = post.video_url ? `${process.env.IMAGE_URL}${post.video_url}` : null;
     const comments = await Comment.find({ recipe_id: post._id })
       .populate('user_id', 'username')
       .sort({ created_at: -1 });

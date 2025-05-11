@@ -10,6 +10,7 @@ const searchRoutes = require('./routes/searchRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 dotenv.config(); 
 connectDB();
@@ -37,6 +38,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/reports', reportRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

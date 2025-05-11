@@ -9,8 +9,8 @@ exports.createRecipe = async (req, res) => {
       title, description, instruction, prep_time, cook_time, servings,
     } = req.body;
 
-    const image = req.files.image?.[0]?.filename;
-    const video = req.files.video?.[0]?.filename;
+    const image = req.files.image?.[0]?.filename || null;
+    const video = req.files.video?.[0]?.filename || null;
 
     const recipe = new Recipe({
       user_id: req.user.id,
@@ -40,9 +40,13 @@ exports.createRecipe = async (req, res) => {
 exports.getAllRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.find({status: 1})
-      .populate('user_id', 'name') // chỉ lấy trường name từ user
+      .populate('user_id', 'username') // chỉ lấy trường name từ user
       .sort({ created_at: -1 }) // sắp xếp theo thời gian tạo mới nhất
     if (!recipes) return res.status(404).json({ message: 'Not found' });
+    recipes.forEach(recipe => {
+      recipe.image_url = recipe.image_url ? `${process.env.IMAGE_URL}${recipe.image_url}` : null;
+      recipe.video_url = recipe.video_url ? `${process.env.IMAGE_URL}${recipe.video_url}` : null;
+    });
     res.status(200).json(recipes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -51,12 +55,14 @@ exports.getAllRecipes = async (req, res) => {
 
 exports.getRecipeById = async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id).populate('user_id');
+    const recipe = await Recipe.findById(req.params.id).populate('user_id', 'username');
     if (!recipe) return res.status(404).json({ message: 'Not found' });
+    recipe.image_url = recipe.image_url ? `${process.env.IMAGE_URL}${recipe.image_url}` : null;
+    recipe.video_url = recipe.video_url ? `${process.env.IMAGE_URL}${recipe.video_url}` : null;
 
     // Lấy danh sách comment theo recipe_id và populate user
     const comments = await Comment.find({ recipe_id: req.params.id })
-      .populate('user_id', 'name') // chỉ lấy trường name từ user
+      .populate('user_id', 'username') // chỉ lấy trường name từ user
 
     // Tính điểm trung bình
     const ratings = comments.map(c => c.rating).filter(Boolean);
@@ -68,7 +74,7 @@ exports.getRecipeById = async (req, res) => {
         content: c.content,
         rating: c.rating,
         created_at: c.created_at,
-        user: c.user_id // vì đã populate name rồi
+        user_id: c.user_id // vì đã populate name rồi
     }));
 
     res.status(200).json({
@@ -81,6 +87,22 @@ exports.getRecipeById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getRecipesByUserId = async (req, res) => {
+  try {
+    const recipes = await Recipe.find({ user_id: req.user.id })
+      .populate('user_id', 'username') // chỉ lấy trường name từ user
+      .sort({ created_at: -1 }) // sắp xếp theo thời gian tạo mới nhất
+    if (!recipes) return res.status(404).json({ message: 'Not found' });
+    recipes.forEach(recipe => {
+      recipe.image_url = recipe.image_url ? `${process.env.IMAGE_URL}${recipe.image_url}` : null;
+      recipe.video_url = recipe.video_url ? `${process.env.IMAGE_URL}${recipe.video_url}` : null;
+    });
+    res.status(200).json(recipes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 exports.updateRecipe = async (req, res) => {
   try {

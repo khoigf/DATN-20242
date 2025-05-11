@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
+import { User, LogOut } from 'lucide-react';
 import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
 import CreateRecipeModal from '../components/CreatePostCard';
@@ -47,9 +48,13 @@ export default function HomePage() {
           {token ? (
             <>
               {role === 'user' && (
-                <Link to="/recipes/manage" className="manage-btn">Quản lý</Link>
+                <Link to="/recipes/manage" className="manage-btn">
+                  <User size={18} style={{ marginRight: '0px' }} />
+                </Link>
               )}
-              <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
+              <button onClick={handleLogout} className="logout-btn">
+                <LogOut size={18} style={{ marginRight: '8px' }} />
+              </button>
             </>
           ) : (
             <>
@@ -64,7 +69,7 @@ export default function HomePage() {
         <div className="feed-column">
           {token && (
             <button className="create-btn" onClick={() => setShowCreateModal(true)}>
-              Viết công thức mới ✍️
+              Tạo công thức mới ✍️
             </button>
           )}
           <h2 className="feed-title">🆕 Công thức mới</h2>

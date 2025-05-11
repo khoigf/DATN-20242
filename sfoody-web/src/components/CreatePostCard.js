@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CreatePostCard.css';
+import ToastNotification from './ToastNotification';
 
 export default function CreateRecipeModal({ onClose }) {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ export default function CreateRecipeModal({ onClose }) {
     image: null,
     video: null,
   });
-
+  const [toast, setToast] = useState('');
   const BASE_URL = process.env.REACT_APP_API;
 
   const handleChange = (e) => {
@@ -27,7 +28,10 @@ export default function CreateRecipeModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    if (!token) return alert('Bạn cần đăng nhập để đăng bài.');
+    if (!token) {
+      setToast('Bạn cần đăng nhập để đăng bài.');
+      return;
+    }
 
     const data = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
@@ -41,11 +45,11 @@ export default function CreateRecipeModal({ onClose }) {
         body: data,
       });
       if (!res.ok) throw new Error('Lỗi khi đăng bài');
-      alert('Tạo công thức thành công!');
-      onClose();
+      setToast('Tạo công thức thành công!');
+      setTimeout(() => onClose(), 1500);
     } catch (err) {
       console.error(err);
-      alert('Đã xảy ra lỗi!');
+      setToast('Đã xảy ra lỗi!');
     }
   };
 
@@ -72,6 +76,7 @@ export default function CreateRecipeModal({ onClose }) {
           <button type="submit">Đăng bài</button>
         </form>
       </div>
+      {toast && <ToastNotification message={toast} onClose={() => setToast('')} />}
     </div>
   );
 }
