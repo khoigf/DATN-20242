@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
-import { User, LogOut } from 'lucide-react';
+import UserMenu from '../components/UserMenu';
 import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
 import CreateRecipeModal from '../components/CreatePostCard';
+import NotificationBell from '../components/NotificationBell';
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
   const BASE_URL = process.env.REACT_APP_API;
@@ -23,11 +22,12 @@ export default function HomePage() {
       .then(data => setRecipes(data));
   }, [BASE_URL]);
 
+  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     navigate('/');
-  };
+  }
 
   return (
     <div className="home-layout">
@@ -47,14 +47,8 @@ export default function HomePage() {
         <div className="auth-actions">
           {token ? (
             <>
-              {role === 'user' && (
-                <Link to="/recipes/manage" className="manage-btn">
-                  <User size={18} style={{ marginRight: '0px' }} />
-                </Link>
-              )}
-              <button onClick={handleLogout} className="logout-btn">
-                <LogOut size={18} style={{ marginRight: '8px' }} />
-              </button>
+              {role === 'user' && <UserMenu onLogout={handleLogout} />}
+              <NotificationBell token={token} />
             </>
           ) : (
             <>

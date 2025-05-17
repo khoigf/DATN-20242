@@ -11,7 +11,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token || localStorage.getItem('role') !== 'admin') {
+    if (!token && localStorage.getItem('role') !== 'admin') {
       navigate('/login');
       return;
     }

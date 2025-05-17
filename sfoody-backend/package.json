@@ -23,7 +23,8 @@
     "mongoose": "^8.13.0",
     "multer": "^1.4.5-lts.2",
     "nodemailer": "^6.10.1",
-    "sfoody-backend": "file:"
+    "sfoody-backend": "file:",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

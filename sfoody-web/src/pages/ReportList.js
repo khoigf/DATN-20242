@@ -11,6 +11,10 @@ export default function ReportList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [reasonModal, setReasonModal] = useState(false);
+  const [currentReportId, setCurrentReportId] = useState(null);
+  const [reason, setReason] = useState('');
+
   const reportsPerPage = 5;
   const navigate = useNavigate();
   const BASE_URL = process.env.REACT_APP_API;
@@ -33,9 +37,21 @@ export default function ReportList() {
     }
   };
 
+  const openReasonModal = (reportId) => {
+    setCurrentReportId(reportId);
+    setReason('');
+    setReasonModal(true);
+  };
+
+  const closeReasonModal = () => {
+    setReasonModal(false);
+    setCurrentReportId(null);
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token || localStorage.getItem('role') !== 'admin') {
+    if (!token && localStorage.getItem('role') !== 'admin') {
       navigate('/login');
       return;
     }
@@ -45,7 +61,7 @@ export default function ReportList() {
 
   const handlePageChange = (newPage) => setCurrentPage(newPage);
 
-  const handleUpdateStatus = async (id, status) => {
+  const handleUpdateStatus = async (id, status, reasonText = '') => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${BASE_URL}/admin/reports/${id}/status`, {
@@ -54,11 +70,12 @@ export default function ReportList() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status, reason: reasonText })
       });
       if (res.ok) {
         const updated = await res.json();
         setReports(reports.map(r => (r._id === id ? updated : r)));
+        closeReasonModal();
       }
     } catch (err) {
       console.error('Update report status error:', err);
@@ -129,7 +146,7 @@ export default function ReportList() {
                     Chi tiết
                   </button>
                   <button
-                    onClick={() => handleUpdateStatus(report._id, 1)}
+                    onClick={() => openReasonModal(report._id)}
                     className="btn-hide"
                   >
                     Ẩn bài
@@ -167,6 +184,27 @@ export default function ReportList() {
               <p><strong>Bài viết:</strong> {selectedReport.recipe_id?.title}</p>
               <p><strong>Nội dung:</strong> {selectedReport.content}</p>
               <p><strong>Trạng thái:</strong> {renderStatusText(selectedReport.status)}</p>
+            </div>
+          </div>
+        )}
+        {reasonModal && (
+          <div className="modal-overlay" onClick={closeReasonModal}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <button className="modal-close" onClick={closeReasonModal}>×</button>
+              <h3>Nhập lý do ẩn bài viết</h3>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows="4"
+                placeholder="Nhập lý do (ví dụ: Bài viết vi phạm nội dung)..."
+                className="reason-textarea"
+              />
+              <button
+                onClick={() => handleUpdateStatus(currentReportId, 1, reason)}
+                className="btn-confirm"
+              >
+                Xác nhận ẩn bài
+              </button>
             </div>
           </div>
         )}

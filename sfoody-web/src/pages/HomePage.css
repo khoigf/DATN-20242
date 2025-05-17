@@ -229,8 +229,9 @@
     font-size: 1.4rem;
   }
 
+  
   .auth-actions {
-    flex-direction: column;
+    flex-direction:column;
     gap: 0.5rem;
   }
 

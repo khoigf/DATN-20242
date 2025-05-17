@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import RecipeModal from '../components/RecipeModal';
-import { User, LogOut } from 'lucide-react';
+import UserMenu from '../components/UserMenu';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/HomeSidebar';
+import NotificationBell from '../components/NotificationBell';
 
 const BASE_URL = process.env.REACT_APP_API;
 
@@ -17,7 +18,6 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
 
-  const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
 
@@ -34,12 +34,6 @@ export default function SearchPage() {
       });
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/');
-  };
-
   const fetchRecipes = (query, tagList) => {
     setLoading(true);
     setNoResults(false);
@@ -55,6 +49,13 @@ export default function SearchPage() {
         }
       });
   };
+
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/');
+  }
 
   const handleTagClick = (tagName) => {
     const newTags = selectedTags.includes(tagName)
@@ -88,14 +89,8 @@ export default function SearchPage() {
         <div className="auth-actions">
           {token ? (
             <>
-              {role === 'user' && (
-                <Link to="/recipes/manage" className="manage-btn">
-                  <User size={18} />
-                </Link>
-              )}
-              <button onClick={handleLogout} className="logout-btn">
-                <LogOut size={18} />
-              </button>
+              {role === 'user' && <UserMenu onLogout={handleLogout} />}
+              <NotificationBell token={token} />
             </>
           ) : (
             <>

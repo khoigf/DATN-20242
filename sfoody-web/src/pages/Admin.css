@@ -297,3 +297,22 @@
     font-size: 1rem;
     color: #475569;
   }
+
+  .reason-textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.btn-confirm {
+  background-color: #d9534f;
+  color: white;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

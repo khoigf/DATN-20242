@@ -11,6 +11,10 @@ export default function PostList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [reasonModal, setReasonModal] = useState(false);
+  const [currentPostId, setCurrentPostId] = useState(null);
+  const [reason, setReason] = useState('');
+
   const postsPerPage = 5;
   const navigate = useNavigate(); 
   const BASE_URL = process.env.REACT_APP_API;
@@ -47,20 +51,56 @@ export default function PostList() {
     setCurrentPage(newPage);
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
+  // Ẩn bài viết (có lý do)
+  const openReasonModal = (postId) => {
+    setCurrentPostId(postId);
+    setReason('');
+    setReasonModal(true);
+  };
+
+  const closeReasonModal = () => {
+    setCurrentPostId(null);
+    setReason('');
+    setReasonModal(false);
+  };
+
+  const handleHidePostWithReason = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${BASE_URL}/admin/posts/${id}/status`, {
+      const res = await fetch(`${BASE_URL}/admin/posts/${currentPostId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status: currentStatus === 1 ? 0 : 1 })
+        body: JSON.stringify({ status: 0, reason }) // gửi lý do
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setPosts(posts.map(p => (p._id === currentPostId ? updated : p)));
+        closeReasonModal();
+      }
+    } catch (err) {
+      console.error('Update status error:', err);
+    }
+  };
+
+  // Hiện bài viết
+  const handleUnHidePost = async (postId, status) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${BASE_URL}/admin/posts/${postId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status }) // gửi trạng thái
       });
       if (res.ok) {
         const updated = await res.json();
-        setPosts(posts.map(p => (p._id === id ? updated : p)));
+        setPosts(posts.map(p => (p._id === postId ? updated : p)));
       }
     } catch (err) {
       console.error('Update status error:', err);
@@ -115,12 +155,21 @@ export default function PostList() {
                 <td>{post.status === 1 ? post.user_id?.username : 'Ẩn'}</td>
                 <td>{post.status === 1 ? 'Hoạt động' : 'Ẩn'}</td>
                 <td className='td-actions'>
-                  <button
-                    onClick={() => handleToggleStatus(post._id, post.status)}
-                    className={`btn-status ${post.status === 1 ? 'btn-hide' : 'btn-show'}`}
-                  >
-                    {post.status === 1 ? 'Ẩn' : 'Hiện'}
-                  </button>
+                  {post.status === 1 ? (
+                    <button
+                      onClick={() => openReasonModal(post._id)}
+                      className="btn-hide"
+                    >
+                      Ẩn
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleUnHidePost(post._id, 1)}
+                      className="btn-show"
+                    >
+                      Hiện
+                    </button>
+                  )}
                   <button
                     onClick={() => openModal(post._id)}
                     className="btn-view"
@@ -176,6 +225,28 @@ export default function PostList() {
                   </div>
                 )) : <p>Chưa có bình luận.</p>}
               </div>                            
+            </div>
+          </div>
+        )}
+
+        {reasonModal && (
+          <div className="modal-overlay" onClick={closeReasonModal}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <button className="modal-close" onClick={closeReasonModal}>×</button>
+              <h3>Nhập lý do ẩn bài viết</h3>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows="4"
+                placeholder="Ví dụ: Bài viết vi phạm nội dung..."
+                className="reason-textarea"
+              />
+              <button
+                onClick={handleHidePostWithReason}
+                className="btn-confirm"
+              >
+                Xác nhận ẩn bài
+              </button>
             </div>
           </div>
         )}

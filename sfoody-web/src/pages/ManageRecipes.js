@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
 import CreateRecipeModal from '../components/CreatePostCard';
-import { User, LogOut } from 'lucide-react';
+import UserMenu from '../components/UserMenu';
 import { Link } from 'react-router-dom';
 import EditRecipeModal from '../components/EditRecipeModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import NotificationBell from '../components/NotificationBell';
 import './HomePage.css';
 
 export default function ManageRecipePage() {
@@ -31,12 +32,6 @@ export default function ManageRecipePage() {
       .catch((err) => console.error(err));
   }, [BASE_URL, token, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/');
-  };
-
   const handleDelete = async (id) => {
   setConfirmDialog({
     title: 'Xác nhận xóa',
@@ -56,6 +51,11 @@ export default function ManageRecipePage() {
     onCancel: () => setConfirmDialog(null),
   });
 };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/');
+  }
 
   return (
     <div className="home-layout">
@@ -64,7 +64,9 @@ export default function ManageRecipePage() {
       <header className="sticky-header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
         <div className="brand-area">
-          <img src="/logo.png" alt="S-Foody" width={50} height={50} />
+          <Link to="/" className="logo">
+            <img src="/logo.png" alt="S-Foody" width={50} height={50} />
+          </Link>
           <div className="text-group">
             <h1 className="title">Quản lý công thức</h1>
             <p className="subtitle">Bài viết của bạn</p>
@@ -73,14 +75,8 @@ export default function ManageRecipePage() {
         <div className="auth-actions">
                   {token ? (
                     <>
-                      {role === 'user' && (
-                        <Link to="/recipes/manage" className="manage-btn">
-                          <User size={18} style={{ marginRight: '0px' }} />
-                        </Link>
-                      )}
-                      <button onClick={handleLogout} className="logout-btn">
-                        <LogOut size={18} style={{ marginRight: '8px' }} />
-                      </button>
+                      {role === 'user' && <UserMenu onLogout={handleLogout} />}
+                      <NotificationBell token={token} />
                     </>
                   ) : (
                     <>

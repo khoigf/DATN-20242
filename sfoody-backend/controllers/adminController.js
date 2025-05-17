@@ -2,6 +2,9 @@ const User = require('../models/userModel');
 const Recipe = require('../models/recipeModel');
 const Report = require('../models/reportModel');
 const Comment = require('../models/commentModel');
+const Notification = require('../models/notificationModel');
+// const { io } = require('../server');
+const { getIO, userSocketMap } = require('../socketManager');
 
 // USER
 exports.getAllUsers = async (req, res) => {
@@ -78,13 +81,47 @@ exports.getPostById = async (req, res) => {
 
 exports.updatePostStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, reason } = req.body;
+
   try {
-    const post = await Recipe.findByIdAndUpdate(id, { status }, { new: true })
-      .populate('user_id', 'username email');
-    res.json(post);
+    const post = await Recipe.findById(id).populate('user_id', 'username email');
+    if (!post) {
+      return res.status(404).json({ error: 'Không tìm thấy bài viết' });
+    }
+
+    // Cập nhật trạng thái
+    post.status = status;
+    await post.save();
+
+    // Gửi thông báo nếu có lý do và trạng thái là ẩn (0)
+    if (status === 0 && reason) {
+      const notification = new Notification({
+        user_id: post.user_id._id,
+        type: 'post_hidden',
+        message: `Bài viết "${post.title}" của bạn đã bị ẩn: ${reason}`,
+        createdAt: new Date()
+      });
+      await notification.save();
+
+      const io = getIO();
+      const socketId = userSocketMap.get(String(post.user_id._id|| post.user_id));
+
+      if (socketId) {
+        io.to(socketId).emit('notification', {
+          message: notification.message,
+          createdAt: new Date(),
+          _id: notification._id,
+          isRead: false,
+        });
+      }
+    }
+
+    const updatedPost = await Recipe.findById(post._id).populate('user_id', 'username email');
+
+    res.json(updatedPost);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Lỗi cập nhật trạng thái bài viết:', err);
+    res.status(500).json({ error: 'Lỗi máy chủ' });
   }
 };
 
@@ -131,7 +168,7 @@ exports.getReportById = async (req, res) => {
 // Cập nhật trạng thái báo cáo (0: chưa xử lý, 1: đã xóa, 2: không vi phạm)
 exports.updateReportStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, reason } = req.body;
   if (typeof status !== 'number' || ![0, 1, 2].includes(status)) {
     return res.status(400).json({ msg: 'Trạng thái không hợp lệ' });
   }
@@ -146,6 +183,23 @@ exports.updateReportStatus = async (req, res) => {
     if (status === 1) {
       // Nếu báo cáo đã được xử lý (ẩn bài viết), cập nhật trạng thái bài viết
       await Recipe.findByIdAndUpdate(updated.recipe_id, { status: 0 });
+      const notification = await Notification.create({
+        user_id: updated.user_id,
+        message: `Bài viết "${updated.recipe_id.title}" của bạn đã bị ẩn vì lý do: ${reason || 'vi phạm chính sách.'}`,
+        type: 'report', // optional
+        createdAt: new Date(),
+      });
+      const io = getIO();
+      const socketId = userSocketMap.get(String(updated.user_id._id|| updated.user_id));
+
+      if (socketId) {
+        io.to(socketId).emit('notification', {
+          message: notification.message,
+          createdAt: new Date(),
+          _id: notification._id,
+          isRead: false,
+        });
+      }
     }
 
     res.status(200).json(updated);
