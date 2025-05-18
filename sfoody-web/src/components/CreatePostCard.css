@@ -1,105 +1,163 @@
 .Cmodal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.Cmodal-container {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.Cmodal-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.create-form input,
+.create-form textarea,
+.create-form select {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.create-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.create-form label {
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tag List */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tag-list label {
+  background-color: #f3f4f6;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tag-list input[type="checkbox"] {
+  accent-color: #2563eb;
+}
+
+/* Ingredient row */
+.ingredient-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ingredient-row select,
+.ingredient-row input {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Button */
+.create-form button {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.6rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.create-form button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Ingredient remove button */
+.remove-ingredient-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.remove-ingredient-btn:hover {
+  background: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
   .Cmodal-container {
-    background: #fff;
-    border-radius: 16px;
-    max-width: 500px;
-    width: 100%;
-    padding: 2rem;
-    position: relative;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
-    max-height: 90vh;
+    max-width: 100%;
+    padding: 1.2rem;
   }
-  
-  .close-btn {
-    position: absolute;
-    top: 0.6rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: #333;
-    cursor: pointer;
-  }
-  
+
   .Cmodal-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    text-align: center;
+    font-size: 1.25rem;
   }
-  
-  .create-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  
+
   .create-form input,
   .create-form textarea {
-    padding: 0.6rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
-  
-  .create-form textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-  
-  .create-form label {
     font-size: 0.95rem;
-    color: #333;
-    display: flex;
+  }
+
+  .close-btn {
+    font-size: 1.8rem;
+  }
+
+  .ingredient-row {
     flex-direction: column;
   }
-  
-  .create-form button {
-    background-color: #2563eb;
-    color: white;
-    padding: 0.6rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 1rem;
-  }
-  
-  .create-form button:hover {
-    background-color: #1d4ed8;
-  }
-  
-  /* Responsive for mobile */
-  @media (max-width: 480px) {
-    .Cmodal-container {
-      max-width: 100%;
-      padding: 1.2rem;
-    }
-  
-    .Cmodal-title {
-      font-size: 1.25rem;
-    }
-  
-    .create-form input,
-    .create-form textarea {
-      font-size: 0.95rem;
-    }
-  
-    .close-btn {
-      font-size: 1.8rem;
-    }
-  }
-  
+}
