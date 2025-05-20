@@ -64,6 +64,16 @@ export default function PostList() {
     setReasonModal(false);
   };
 
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    
+    // Regex để bắt ID video từ các dạng URL YouTube phổ biến (watch, youtu.be, shorts)
+    const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/;
+    const match = url.match(regex);
+    
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
   const handleHidePostWithReason = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -120,6 +130,58 @@ export default function PostList() {
   const closeModal = () => {
     setSelectedPost(null);
     setShowModal(false);
+  };
+  const renderPagination = () => {
+    const totalPages = Math.ceil(totalPosts / postsPerPage);
+    const pages = [];
+
+    const maxPageToShow = 5;
+    let startPage = Math.max(currentPage - 2, 1);
+    let endPage = Math.min(startPage + maxPageToShow - 1, totalPages);
+
+    if (endPage - startPage < maxPageToShow - 1) {
+      startPage = Math.max(endPage - maxPageToShow + 1, 1);
+    }
+
+    if (startPage > 1) {
+      pages.push(<span key="start-ellipsis" className="page-ellipsis">...</span>);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-button ${currentPage === i ? 'active' : ''}`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (endPage < totalPages) {
+      pages.push(<span key="end-ellipsis" className="page-ellipsis">...</span>);
+    }
+
+    return (
+      <div className="pagination-container">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="pagination-arrow"
+        >
+          &laquo;
+        </button>
+        {pages}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="pagination-arrow"
+        >
+          &raquo;
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -182,17 +244,7 @@ export default function PostList() {
           </tbody>
         </table>
 
-        <div className="pagination">
-          {Array.from({ length: Math.ceil(totalPosts / postsPerPage) }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
-              className={currentPage === i + 1 ? 'active' : 'inactive'}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {renderPagination()}
 
         {showModal && selectedPost && (
           <div className="modal-overlay" onClick={closeModal}>
@@ -208,12 +260,25 @@ export default function PostList() {
               <p><strong>Hình ảnh:</strong>{selectedPost.image_url && (
                 <img src={selectedPost.image_url} alt="recipe" className="modal-img" />
               )}</p>
-              <p><strong>Video:</strong>{selectedPost.video_url && (
-                <video controls className="modal-video">
-                  <source src={selectedPost.video_url} type="video/mp4" />
-                  Trình duyệt không hỗ trợ video.
-                </video>
-              )}</p>
+              {selectedPost.video_url && (() => {
+                const embedUrl = getYoutubeEmbedUrl(selectedPost.video_url);
+                if (!embedUrl) return null; // Nếu không lấy được URL embed thì không render iframe
+
+                return (
+                  <div className="modal-video">
+                    <p><strong>Video:</strong></p>
+                    <iframe
+                      width="100%"
+                      height="315"
+                      src={embedUrl}
+                      title="Video hướng dẫn"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                );
+              })()}
               <p><strong>Đánh giá trung bình:</strong> {selectedPost.averageRating ? `${selectedPost.averageRating} ⭐` : 'Chưa có đánh giá'}</p>
               <div className="modal-comments">
                 <h4>Bình luận:</h4>

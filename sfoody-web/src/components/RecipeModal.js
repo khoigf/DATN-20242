@@ -62,6 +62,16 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
     }
   };
 
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    
+    // Regex để bắt ID video từ các dạng URL YouTube phổ biến (watch, youtu.be, shorts)
+    const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/;
+    const match = url.match(regex);
+    
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!token) {
@@ -135,7 +145,7 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
             <iframe
               width="100%"
               height="315"
-              src={recipe.video_url}
+              src={getYoutubeEmbedUrl(recipe.video_url)}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

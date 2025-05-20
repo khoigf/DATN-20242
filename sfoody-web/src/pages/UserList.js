@@ -71,6 +71,59 @@ export default function UserList() {
     setCurrentPage(newPage);
   };
 
+  const renderPagination = () => {
+    const totalPages = Math.ceil(totalUsers / usersPerPage);
+    const pages = [];
+
+    const maxPageToShow = 5;
+    let startPage = Math.max(currentPage - 2, 1);
+    let endPage = Math.min(startPage + maxPageToShow - 1, totalPages);
+
+    if (endPage - startPage < maxPageToShow - 1) {
+      startPage = Math.max(endPage - maxPageToShow + 1, 1);
+    }
+
+    if (startPage > 1) {
+      pages.push(<span key="start-ellipsis" className="page-ellipsis">...</span>);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`pagination-button ${currentPage === i ? 'active' : ''}`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (endPage < totalPages) {
+      pages.push(<span key="end-ellipsis" className="page-ellipsis">...</span>);
+    }
+
+    return (
+      <div className="pagination-container">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="pagination-arrow"
+        >
+          &laquo;
+        </button>
+        {pages}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="pagination-arrow"
+        >
+          &raquo;
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-layout">
       <Sidebar />
@@ -118,17 +171,7 @@ export default function UserList() {
           </tbody>
         </table>
 
-        <div className="pagination">
-          {Array.from({ length: Math.ceil(totalUsers / usersPerPage) }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => handlePageChange(i + 1)}
-              className={currentPage === i + 1 ? 'active' : 'inactive'}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {renderPagination()}
       </div>
     </div>
   );

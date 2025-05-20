@@ -53,7 +53,7 @@ exports.getAllPosts = async (req, res) => {
   ]);
   posts.forEach(post => {
     post.image_url = post.image_url ? `${process.env.IMAGE_URL}${post.image_url}` : null;
-    post.video_url = post.video_url ? `${process.env.IMAGE_URL}${post.video_url}` : null;
+    post.video_url = post.video_url ? post.video_url : null;
   })
 
   res.json({ posts, total });
@@ -65,7 +65,7 @@ exports.getPostById = async (req, res) => {
     const post = await Recipe.findById(id).populate('user_id', 'username email')
     if (!post) return res.status(404).json({ msg: 'Post not found' });
     post.image_url = post.image_url ? `${process.env.IMAGE_URL}${post.image_url}` : null;
-    post.video_url = post.video_url ? `${process.env.IMAGE_URL}${post.video_url}` : null;
+    post.video_url = post.video_url ? post.video_url : null;
     const comments = await Comment.find({ recipe_id: post._id })
       .populate('user_id', 'username')
       .sort({ created_at: -1 });
@@ -176,21 +176,20 @@ exports.updateReportStatus = async (req, res) => {
   try {
     const updated = await Report.findByIdAndUpdate(id, { status }, { new: true })
       .populate('user_id', 'username email')
-      .populate('recipe_id', 'title');
+      .populate('recipe_id', 'user_id title');
 
     if (!updated) return res.status(404).json({ msg: 'Không tìm thấy báo cáo để cập nhật' });
-
     if (status === 1) {
       // Nếu báo cáo đã được xử lý (ẩn bài viết), cập nhật trạng thái bài viết
       await Recipe.findByIdAndUpdate(updated.recipe_id, { status: 0 });
       const notification = await Notification.create({
-        user_id: updated.user_id,
+        user_id: updated.recipe_id.user_id._id,
         message: `Bài viết "${updated.recipe_id.title}" của bạn đã bị ẩn vì lý do: ${reason || 'vi phạm chính sách.'}`,
         type: 'report', // optional
         createdAt: new Date(),
       });
       const io = getIO();
-      const socketId = userSocketMap.get(String(updated.user_id._id|| updated.user_id));
+      const socketId = userSocketMap.get(String(updated.recipe_id.user_id._id|| updated.recipe_id.user_id));
 
       if (socketId) {
         io.to(socketId).emit('notification', {

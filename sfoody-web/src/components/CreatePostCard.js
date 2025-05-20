@@ -82,13 +82,23 @@ export default function CreateRecipeModal({ onClose }) {
           <input name="cook_time" placeholder="Thời gian nấu (phút)" type="number" onChange={handleChange} />
           <input name="servings" placeholder="Khẩu phần ăn" type="number" onChange={handleChange} />
           <label>Ảnh món ăn:<input type="file" name="image" accept="image/*" onChange={handleChange} /></label>
-          <label>Video hướng dẫn:<input type="file" name="video" accept="video/*" onChange={handleChange} /></label>
-
+          <label>
+            Video YouTube (tùy chọn):
+            <input
+              type="text"
+              name="video_url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={formData.video_url || ''}
+              onChange={handleChange}
+          />
+          </label>
           <label>Chọn thẻ (tags):</label>
           <Select
             isMulti
             options={tags.map(tag => ({ value: tag._id, label: tag.name }))}
-            value={tags.filter(tag => selectedTags.includes(tag._id)).map(tag => ({
+            value={tags
+              .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+              .filter(tag => selectedTags.includes(tag._id)).map(tag => ({
               value: tag._id,
               label: tag.name
             }))}
@@ -103,7 +113,9 @@ export default function CreateRecipeModal({ onClose }) {
             <div key={idx} className="ingredient-field">
               <select name="ingredient_id" value={field.ingredient_id} onChange={e => handleIngredientChange(idx, e)}>
                 <option value="">-- Chọn nguyên liệu --</option>
-                {ingredients.map(ing => (
+                {ingredients
+                  .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+                  .map(ing => (
                   <option key={ing._id} value={ing._id}>{ing.name}</option>
                 ))}
               </select>

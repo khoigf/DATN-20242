@@ -193,8 +193,10 @@ export default function EditRecipeModal({ recipe, onClose }) {
               isMulti
               options={tags.map(tag => ({ value: tag._id, label: tag.name }))}
               value={tags
+                .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
                 .filter(tag => selectedTags.includes(tag._id))
-                .map(tag => ({ value: tag._id, label: tag.name }))}
+                .map(tag => ({ value: tag._id, label: tag.name }))
+              }
               onChange={selected => setSelectedTags(selected ? selected.map(item => item.value) : [])}
               placeholder="Chọn tag..."
               className="react-select-container"
@@ -209,7 +211,9 @@ export default function EditRecipeModal({ recipe, onClose }) {
                   onChange={(e) => handleIngredientChange(index, 'id', e.target.value)}
                 >
                   <option value="">{'-- Chọn nguyên liệu --'}</option>
-                  {ingredients.map(i => (
+                  {ingredients
+                    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+                    .map(i => (
                     <option key={i._id} value={i._id}>{i.name}</option>
                   ))}
                 </select>
@@ -231,8 +235,14 @@ export default function EditRecipeModal({ recipe, onClose }) {
               <input type="file" name="image" accept="image/*" onChange={handleChange} />
             </label>
             <label>
-              Video hướng dẫn (nếu muốn thay):
-              <input type="file" name="video" accept="video/*" onChange={handleChange} />
+              Video YouTube (tùy chọn):
+              <input
+                type="text"
+                name="video_url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={formData.video_url || ''}
+                onChange={handleChange}
+            />
             </label>
 
             <button type="submit">Lưu thay đổi</button>

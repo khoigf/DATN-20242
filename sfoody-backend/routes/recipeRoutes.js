@@ -25,7 +25,6 @@ const upload = multer({
 
 router.post('/',verifyToken, upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'video', maxCount: 1 },
   ]), recipeController.createRecipe);
 router.get('/',recipeController.getAllRecipes);
 router.get('/user', verifyToken, recipeController.getRecipesByUserId);
@@ -33,7 +32,6 @@ router.get('/:id', recipeController.getRecipeById);
 
 router.put('/:id', verifyToken, upload.fields([
     { name: 'image', maxCount: 1 },
-    { name: 'video', maxCount: 1 },
   ]), recipeController.updateRecipe);
 router.delete('/:id',verifyToken, recipeController.deleteRecipe);
 

@@ -9,11 +9,10 @@ exports.createRecipe = async (req, res) => {
   try {
     const {
       title, description, instruction, prep_time, cook_time, servings,
-      tag_ids, ingredients
+      tag_ids, ingredients, video_url
     } = req.body;
 
     const image = req.files.image?.[0]?.filename || null;
-    const video = req.files.video?.[0]?.filename || null;
 
     const recipe = new Recipe({
       user_id: req.user.id,
@@ -24,7 +23,7 @@ exports.createRecipe = async (req, res) => {
       cook_time,
       servings,
       image_url: image ? `/uploads/${image}` : undefined,
-      video_url: video ? `/uploads/${video}` : undefined,
+      video_url: video_url || null,
     });
     await recipe.save();
 
@@ -136,44 +135,64 @@ exports.getRecipesByUserId = async (req, res) => {
 
 exports.updateRecipe = async (req, res) => {
   try {
-    const { tag_ids, ingredients } = req.body;
+    const { tag_ids, ingredients, video_url } = req.body;
 
-    // Xử lý ảnh/video nếu có upload mới
+    // --- Xử lý ảnh/video nếu có upload ---
     const image = req.files?.image?.[0]?.filename || null;
-    const video = req.files?.video?.[0]?.filename || null;
 
     if (image) {
       req.body.image_url = `/uploads/${image}`;
     }
 
-    if (video) {
-      req.body.video_url = `/uploads/${video}`;
+    if (video_url) {
+      req.body.video_url = video_url;
     }
-
-    // Cập nhật recipe chính
+    // --- Cập nhật recipe chính ---
     const updated = await Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-    // --- Xử lý tag nếu được gửi lên ---
+    // --- Xử lý tag_ids từ FormData ---
     if (typeof tag_ids !== 'undefined') {
       await RecipeTag.deleteMany({ recipe_id: updated._id });
 
-      const parsedTags = tag_ids ? JSON.parse(tag_ids) : [];
+      let parsedTags = [];
+      if (Array.isArray(tag_ids)) {
+        parsedTags = tag_ids;
+      } else {
+        parsedTags = [tag_ids]; // Trường hợp chỉ gửi 1 tag
+      }
 
       await Promise.all(parsedTags.map(tagId =>
         RecipeTag.create({ recipe_id: updated._id, tag_id: tagId })
       ));
     }
 
-    // --- Xử lý nguyên liệu nếu được gửi lên ---
+    // --- Xử lý ingredients từ FormData ---
     if (typeof ingredients !== 'undefined') {
       await RecipeIngredient.deleteMany({ recipe_id: updated._id });
 
-      const parsedIngredients = ingredients ? JSON.parse(ingredients) : [];
+      let parsedIngredients = [];
+
+      if (Array.isArray(ingredients)) {
+        parsedIngredients = ingredients.map(item => {
+          try {
+            return JSON.parse(item);
+          } catch (e) {
+            return null;
+          }
+        }).filter(Boolean);
+      } else if (typeof ingredients === 'string') {
+        try {
+          const single = JSON.parse(ingredients);
+          parsedIngredients = Array.isArray(single) ? single : [single];
+        } catch (e) {
+          parsedIngredients = [];
+        }
+      }
 
       await Promise.all(parsedIngredients.map(item =>
         RecipeIngredient.create({
           recipe_id: updated._id,
-          ingredient_id: item.ingredient_id,
+          ingredient_id: item.id,
           quantity: item.quantity
         })
       ));
