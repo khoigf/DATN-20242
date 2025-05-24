@@ -1,4 +1,9 @@
 const Comment = require('../models/commentModel');
+const Recipe = require('../models/recipeModel');
+const Notification = require('../models/notificationModel');
+const client = require('../utils/searchClient');
+const index = client.index('recipes');
+const { getIO, userSocketMap } = require('../socketManager');
 
 exports.createComment = async (req, res) => {
   try {
@@ -17,8 +22,27 @@ exports.createComment = async (req, res) => {
     });
 
     // Populate user để trả về ngay tên người bình luận
-    const populatedComment = await newComment.populate('user_id', 'name');
+    const populatedComment = await newComment.populate('user_id', 'username');
+    const recipe = await Recipe.findById(recipe_id);
 
+    const notification = new Notification({
+      user_id: recipe.user_id,
+      type: 'comment',
+      message: `${populatedComment.user_id.username} đã bình luận về công thức ${recipe.title}`,
+      createdAt: new Date()
+    });
+
+    await notification.save();
+    const io = getIO();
+    const socketId = userSocketMap.get(String(recipe.user_id));
+    if (socketId) {
+        io.to(socketId).emit('notification', {
+          message: notification.message,
+          createdAt: new Date(),
+          _id: notification._id,
+          isRead: false,
+        });
+      }
     res.status(201).json(populatedComment);
   } catch (err) {
     res.status(500).json({ error: err.message });
