@@ -2,7 +2,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const http = require('http');
-const { Server } = require('socket.io');
 const { setupSocket } = require('./socketManager');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
@@ -40,7 +39,7 @@ app.use(compression());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
-// app.use('/api/favorites', favoriteRoutes);
+app.use('/api/favorites', favoriteRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/ingredients', IngredientRoutes);
 app.use('/api/search', searchRoutes);

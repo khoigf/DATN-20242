@@ -3,7 +3,8 @@ const Recipe = require('../models/recipeModel');
 const Report = require('../models/reportModel');
 const Comment = require('../models/commentModel');
 const Notification = require('../models/notificationModel');
-// const { io } = require('../server');
+const client = require('../utils/searchClient');
+const index = client.index('recipes');
 const { getIO, userSocketMap } = require('../socketManager');
 
 // USER
@@ -92,6 +93,11 @@ exports.updatePostStatus = async (req, res) => {
     // Cập nhật trạng thái
     post.status = status;
     await post.save();
+
+    index.updateDocuments({
+      id: post._id.toString(),
+      status: status,
+    });
 
     // Gửi thông báo nếu có lý do và trạng thái là ẩn (0)
     if (status === 0 && reason) {
@@ -182,6 +188,11 @@ exports.updateReportStatus = async (req, res) => {
     if (status === 1) {
       // Nếu báo cáo đã được xử lý (ẩn bài viết), cập nhật trạng thái bài viết
       await Recipe.findByIdAndUpdate(updated.recipe_id, { status: 0 });
+      // Cập nhật trạng thái trong Meilisearch
+      await index.updateDocuments({
+        id: updated.recipe_id._id.toString(),
+        status: 0,
+      });
       const notification = await Notification.create({
         user_id: updated.recipe_id.user_id._id,
         message: `Bài viết "${updated.recipe_id.title}" của bạn đã bị ẩn vì lý do: ${reason || 'vi phạm chính sách.'}`,

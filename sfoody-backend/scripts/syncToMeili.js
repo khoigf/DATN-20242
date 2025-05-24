@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 const client = require('../utils/searchClient');
+env = require('dotenv').config();
 
 const Recipe = require('../models/recipeModel');
 const RecipeTag = require('../models/recipeTagModel');
 const Tag = require('../models/tagModel');
 const RecipeIngredient = require('../models/recipeIngredient');
 const Ingredient = require('../models/ingredientModel');
+
+const getFullImageUrl = (imagePath) => {
+  return imagePath ? `${process.env.IMAGE_URL}${imagePath}` : null;
+};
 
 // Kết nối MongoDB
 mongoose.connect('mongodb+srv://root:8KPVZpgNIqnIq2gP@cluster0.ipujnzr.mongodb.net/Sfoody', {
@@ -19,6 +24,7 @@ async function syncRecipesToMeili() {
 
     // 1. Lấy tất cả công thức
     const recipes = await Recipe.find().lean();
+    index.deleteAllDocuments(); // Xóa tất cả tài liệu trong chỉ mục trước khi thêm mới
     const results = [];
 
     for (const recipe of recipes) {
@@ -43,9 +49,11 @@ async function syncRecipesToMeili() {
         prep_time: recipe.prep_time,
         cook_time: recipe.cook_time,
         servings: recipe.servings,
-        image_url: recipe.image_url,
+        image_url: getFullImageUrl(recipe.image_url),
         video_url: recipe.video_url,
         created_at: recipe.created_at,
+        status: recipe.status,
+        user_id: recipe.user_id.toString(),
         tags,         // mảng chuỗi tag name
         ingredients,  // mảng object { name, quantity, category }
       });

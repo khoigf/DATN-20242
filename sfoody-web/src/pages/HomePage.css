@@ -129,10 +129,12 @@
 /* Main Feed */
 .feed-main {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   padding: 2rem 1rem;
   gap: 2rem;
   flex: 1;
+  flex-direction: row; /* Desktop mặc định */
 }
 
 .feed-column {
@@ -201,6 +203,15 @@
   display: block;
 }
 
+.left-column {
+  width: 250px;
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: block;
+}
+
 .sidebar-title {
   font-weight: 600;
   margin-bottom: 0.75rem;
@@ -208,13 +219,53 @@
   color: #334155;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .right-column {
-    display: flex;
-  }
+/* Toggle button mobile */
+.tag-toggle-btn {
+  margin: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f2f2f2;
+  border: none;
+  border-radius: 8px;
 }
 
+.filter-bar {
+  padding: 1rem;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+.filter-panel {
+  margin-top: 1rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-button {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background-color: #eee;
+  border: none;
+  cursor: pointer;
+}
+
+.tag-button.selected {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  margin: 16px 0;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .feed-main {
     flex-direction: column;
@@ -224,7 +275,17 @@
   .feed-column {
     max-width: 100%;
   }
+  .right-column {
+    display: none;
+  }
 
+  .left-column {
+    width: 90%;
+    margin-bottom: 1.5rem;
+  }
+  .hide-on-mobile {
+    display: none;
+  }
   .app-title {
     font-size: 1.4rem;
   }
@@ -241,4 +302,54 @@
     align-items: flex-start;
     gap: 0.75rem;
   }
+}
+/* Gợi ý hôm nay - Floating Action Button */
+.suggestion-fab {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 50%;
+  padding: 0.8rem 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 999;
+}
+
+/* Popup nhỏ */
+.suggestion-popup {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background-color: #fff8e1;
+  border: 1px solid #ffc107;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 250px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  float: right;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* Chỉ hiện trên mobile */
+@media (max-width: 768px) {
+  .suggestion-fab {
+    display: block;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

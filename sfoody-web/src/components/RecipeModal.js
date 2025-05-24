@@ -16,7 +16,7 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
   // Fetch recipe detail on open
   const fetchRecipeDetail = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/recipes/${initialRecipe._id}`);
+      const res = await fetch(`${BASE_URL}/recipes/${initialRecipe._id? initialRecipe._id : initialRecipe.id}`);
       const data = await res.json();
       setRecipe(data);
     } catch (error) {

@@ -8,6 +8,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ManageRecipes from './pages/ManageRecipes';
 import SearchPage from './pages/SearchPage';
+import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserList from './pages/UserList';
 import PostList from './pages/PostList';
@@ -25,6 +27,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/recipes/manage" element={<ManageRecipes />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserList />} />

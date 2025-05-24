@@ -7,9 +7,4 @@ const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 router.get('/me', verifyToken, userController.getProfile);
 router.put('/me', verifyToken, userController.updateProfile);
 
-// Công thức đã đăng và yêu thích
-router.get('/me/posts', verifyToken, userController.getUserPosts);
-router.get('/me/favorites', verifyToken, userController.getFavorites);
-router.delete('/me/favorites/:recipeId', verifyToken, userController.removeFavorite);
-
 module.exports = router;
