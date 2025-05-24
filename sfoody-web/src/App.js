@@ -10,6 +10,7 @@ import ManageRecipes from './pages/ManageRecipes';
 import SearchPage from './pages/SearchPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
+import EditProfilePage from './pages/EditProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserList from './pages/UserList';
 import PostList from './pages/PostList';
@@ -29,6 +30,7 @@ function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/edit-profile" element={<EditProfilePage />} />
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserList />} />

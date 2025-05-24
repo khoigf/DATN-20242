@@ -4,7 +4,7 @@ const Recipe = require('../models/recipeModel');
 exports.addFavorite = async (req, res) => {
     const { recipeId } = req.body;
     const userId = req.user.id;
-    
+    console.log('Adding favorite for user:', userId, 'recipe:', recipeId);
     try {
         // Check if the recipe exists
         const recipe = await Recipe.findById(recipeId);
@@ -20,8 +20,8 @@ exports.addFavorite = async (req, res) => {
     
         // Create a new favorite
         const newFavorite = new Favorite({
-            user: userId,
-            recipe: recipeId,
+            user_id: userId,
+            recipe_id: recipeId,
         });
     
         await newFavorite.save();
@@ -44,7 +44,7 @@ exports.getFavorites = async (req, res) => {
             recipe: {
                 id: favorite.recipe_id._id,
                 title: favorite.recipe_id.title,
-                image_url: favorite.recipe_id.image_url,
+                image_url: favorite.recipe_id.image_url? `${process.env.IMAGE_URL}${favorite.recipe_id.image_url}` : null,
                 description: favorite.recipe_id.description,
             },
         }));

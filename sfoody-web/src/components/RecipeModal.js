@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import './RecipeModal.css';
 import ToastNotification from './ToastNotification';
 
@@ -9,14 +9,17 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
   const [showReportForm, setShowReportForm] = useState(false);
   const [toast, setToast] = useState('');
   const [rating, setRating] = useState(5);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteId, setFavoriteId] = useState(null);
+
   const token = localStorage.getItem('token');
   const BASE_URL = process.env.REACT_APP_API;
   const comments = recipe.comments || [];
 
-  // Fetch recipe detail on open
+  // === Load recipe details ===
   const fetchRecipeDetail = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/recipes/${initialRecipe._id? initialRecipe._id : initialRecipe.id}`);
+      const res = await fetch(`${BASE_URL}/recipes/${initialRecipe._id || initialRecipe.id}`);
       const data = await res.json();
       setRecipe(data);
     } catch (error) {
@@ -25,11 +28,72 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
     }
   };
 
+  // === Check if recipe is favorited by user ===
+  const checkIfFavorite = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${BASE_URL}/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      const found = data.find(f => f.recipe.id === (initialRecipe._id || initialRecipe.id));
+      if (found) {
+        setIsFavorite(true);
+        setFavoriteId(found.id);
+      } else {
+        setIsFavorite(false);
+        setFavoriteId(null);
+      }
+    } catch (error) {
+      console.error('Lỗi khi kiểm tra yêu thích', error);
+    }
+  }, [BASE_URL, initialRecipe._id, initialRecipe.id, token]);
+
   useEffect(() => {
     fetchRecipeDetail();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialRecipe._id]);
+    checkIfFavorite();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRecipe._id, checkIfFavorite]);
 
+  // === Toggle Favorite ===
+  const toggleFavorite = async () => {
+    if (!token) {
+      setToast('Bạn cần đăng nhập để yêu thích công thức.');
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        const res = await fetch(`${BASE_URL}/favorites/${favoriteId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error();
+        setToast('Đã xóa khỏi danh sách yêu thích.');
+        setIsFavorite(false);
+        setFavoriteId(null);
+      } else {
+        const res = await fetch(`${BASE_URL}/favorites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ recipeId: recipe._id }),
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setToast('Đã thêm vào danh sách yêu thích!');
+        setIsFavorite(true);
+        setFavoriteId(data._id);
+      }
+    } catch (error) {
+      console.error(error);
+      setToast('Thao tác yêu thích thất bại.');
+    }
+  };
+
+  // === Submit Comment ===
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!token) {
@@ -55,23 +119,14 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
       setToast('Bình luận đã được gửi!');
       setNewComment('');
       setRating(5);
-      await fetchRecipeDetail(); // Reload recipe to update comments + rating
+      await fetchRecipeDetail(); // Cập nhật lại recipe để hiển thị comment mới
     } catch (error) {
       console.error(error);
       setToast('Đã xảy ra lỗi.');
     }
   };
 
-  const getYoutubeEmbedUrl = (url) => {
-    if (!url) return null;
-    
-    // Regex để bắt ID video từ các dạng URL YouTube phổ biến (watch, youtu.be, shorts)
-    const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/;
-    const match = url.match(regex);
-    
-    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
-  };
-
+  // === Submit Report ===
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     if (!token) {
@@ -103,20 +158,32 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
     }
   };
 
+  // === Parse YouTube embed link ===
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    const regex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/]+)/;
+    const match = url.match(regex);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>×</button>
-        <img src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} className="modal-image" />
+
+        <img
+          src={recipe.image_url || '/default-recipe.jpg'}
+          alt={recipe.title}
+          className="modal-image"
+        />
+
         <h2 className="modal-title">{recipe.title}</h2>
         <p className="modal-author">Được đăng bởi: {recipe.user_id?.username || 'Ẩn danh'}</p>
         <p className="modal-description">{recipe.description}</p>
 
         <div className="modal-tags">
           <strong>Tags:</strong>{' '}
-          {recipe.tags?.length
-            ? recipe.tags.map(tag => tag.name).join(', ')
-            : 'Không có'}
+          {recipe.tags?.length ? recipe.tags.map(tag => tag.name).join(', ') : 'Không có'}
         </div>
 
         <div className="modal-ingredients">
@@ -133,6 +200,10 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
             )}
           </ul>
         </div>
+        
+        <button className={`favorite-btn ${isFavorite ? 'favorited' : ''}`} onClick={toggleFavorite}>
+          {isFavorite ? '❤️ Bỏ yêu thích' : '🤍 Yêu thích'}
+        </button>
 
         <div className="modal-instructions">
           <h3>Hướng dẫn</h3>
@@ -160,15 +231,16 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
           <p><strong>Khẩu phần:</strong> {recipe.servings}</p>
         </div>
 
-        <div className="modal-average-rating"> 
-          <p><strong>Đánh giá trung bình: </strong>{recipe.averageRating? recipe.averageRating + ' ⭐' : 'Chưa có đánh giá'}</p>
+        <div className="modal-average-rating">
+          <p><strong>Đánh giá trung bình:</strong> {recipe.averageRating ? `${recipe.averageRating} ⭐` : 'Chưa có đánh giá'}</p>
         </div>
 
         <div className="report-section">
           <strong>Báo cáo công thức: </strong>
-          <button className='report-btn' onClick={() => setShowReportForm(!showReportForm)}>
+          <button className="report-btn" onClick={() => setShowReportForm(!showReportForm)}>
             {showReportForm ? 'Hủy' : 'Báo cáo'}
           </button>
+
           {showReportForm && (
             <form onSubmit={handleReportSubmit} className="report-form">
               <textarea
@@ -205,17 +277,20 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
           <div className="comments-list">
             {comments.length === 0 ? (
               <p>Chưa có bình luận nào.</p>
-            ) : comments.map((c, i) => (
-              <div key={i} className="comment-item">
-                <div className="comment-header">
-                  <strong>{c.user_id?.username || 'Ẩn danh'}</strong>
-                  <span>({c.rating} ⭐): {c.content}</span>
+            ) : (
+              comments.map((c, i) => (
+                <div key={i} className="comment-item">
+                  <div className="comment-header">
+                    <strong>{c.user_id?.username || 'Ẩn danh'}</strong>
+                    <span>({c.rating} ⭐): {c.content}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
+
       {toast && <ToastNotification message={toast} onClose={() => setToast('')} />}
     </div>
   );

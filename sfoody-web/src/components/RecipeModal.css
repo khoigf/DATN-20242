@@ -24,6 +24,7 @@
   animation: fadeIn 0.35s ease;
   overflow-y: auto;
   max-height: 90vh;
+  animation: fadeIn 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .close-btn {
@@ -133,6 +134,7 @@
   max-height: 200px;
   overflow-y: auto;
   padding-right: 0.5rem;
+  scroll-behavior: smooth;
 }
 
 .comment-item {
@@ -180,6 +182,22 @@
 }
 .report-btn:hover {
   background-color: #d32f2f;
+}
+.favorite-btn {
+  background: none;
+  border: none;
+  color: #9ca3af; /* sáng hơn một chút */
+  transition: color 0.2s;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.favorite-btn:hover {
+  color: #ef4444; /* đỏ nhẹ khi hover */
+}
+
+.favorite-btn.favorited {
+  color: red;
 }
 
 /* Animation */

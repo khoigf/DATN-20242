@@ -95,7 +95,7 @@ export default function HomePage() {
         <div className="auth-actions">
           {token ? (
             <>
-              {role === 'user' && <UserMenu onLogout={handleLogout} />}
+              <UserMenu onLogout={handleLogout} />
               <NotificationBell token={token} />
             </>
           ) : (
