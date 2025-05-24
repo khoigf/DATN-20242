@@ -6,7 +6,7 @@ import './NotificationBell.css';
 const SOCKET_URL = process.env.REACT_APP_SOCKET;
 const API_URL = process.env.REACT_APP_API;
 
-export default function NotificationBell({ token }) {
+export default function NotificationBell({ token, enabled }) {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,12 +34,20 @@ export default function NotificationBell({ token }) {
   }, [token]);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !enabled) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        console.log('📴 Socket disconnected');
+      }
+      return;
+    }
 
     const socket = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket'],
     });
+
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -54,8 +62,11 @@ export default function NotificationBell({ token }) {
       console.error('❌ Socket error:', err.message);
     });
 
-    return () => socket.disconnect();
-  }, [token]);
+    return () => {
+      socket.disconnect();
+      console.log('📴 Socket disconnected');
+    };
+  }, [token, enabled]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {

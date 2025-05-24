@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/HomeSidebar';
 import UserMenu from '../components/UserMenu';
@@ -7,11 +7,22 @@ import './HomePage.css';
 
 export default function SettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
+    return localStorage.getItem('notificationsEnabled') !== 'false';
+  });
+
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -20,13 +31,18 @@ export default function SettingsPage() {
   };
 
   const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
-    // Bạn có thể cập nhật thêm logic lưu trạng thái dark mode ở localStorage hoặc context
+    setDarkMode(prev => {
+      localStorage.setItem('darkMode', !prev);
+      return !prev;
+    });
   };
 
   const toggleNotifications = () => {
-    setNotificationsEnabled(prev => !prev);
-    // Có thể gọi API lưu cài đặt notification nếu cần
+    setNotificationsEnabled(prev => {
+      const newValue = !prev;
+      localStorage.setItem('notificationsEnabled', newValue);
+      return newValue;
+    });
   };
 
   return (
@@ -48,7 +64,7 @@ export default function SettingsPage() {
           {token && (
             <>
               <UserMenu onLogout={handleLogout} />
-              <NotificationBell token={token} />
+              <NotificationBell token={token} enabled={notificationsEnabled} />
             </>
           )}
         </div>
@@ -58,14 +74,20 @@ export default function SettingsPage() {
         <div className="feed-column">
           <h2 className="feed-title">⚙️ Cài đặt</h2>
           <div className="settings-section">
-            <label className="settings-item">
+            <div className="settings-item">
               <span>🌗 Chế độ tối</span>
-              <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
-            </label>
-            <label className="settings-item">
+              <label className="switch">
+                <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
+                <span className="slider round"></span>
+              </label>
+            </div>
+            <div className="settings-item">
               <span>🔔 Nhận thông báo</span>
-              <input type="checkbox" checked={notificationsEnabled} onChange={toggleNotifications} />
-            </label>
+              <label className="switch">
+                <input type="checkbox" checked={notificationsEnabled} onChange={toggleNotifications} />
+                <span className="slider round"></span>
+              </label>
+            </div>
             <div className="settings-item">
               <Link to="/edit-profile" className="manage-btn">✏️ Chỉnh sửa hồ sơ</Link>
             </div>
