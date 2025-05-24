@@ -89,10 +89,10 @@ export default function SettingsPage() {
               </label>
             </div>
             <div className="settings-item">
-              <Link to="/edit-profile" className="manage-btn">✏️ Chỉnh sửa hồ sơ</Link>
+              <Link to="/edit-profile" className="manage-btn">Chỉnh sửa hồ sơ</Link>
             </div>
             <div className="settings-item">
-              <button className="manage-btn" onClick={handleLogout}>🚪 Đăng xuất</button>
+              <button className="manage-btn" onClick={handleLogout}>Đăng xuất</button>
             </div>
           </div>
         </div>

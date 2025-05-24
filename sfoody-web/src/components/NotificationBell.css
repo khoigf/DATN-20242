@@ -139,3 +139,53 @@
 .delete-icon:hover {
   color: red;
 }
+/* Dark mode styles */
+body.dark-mode .notification-dropdown {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  border: 1px solid #333;
+}
+body.dark-mode .notification-dropdown h4 {
+  color: #f0f0f0;
+}
+body.dark-mode .notification-dropdown li {
+  border-bottom: 1px solid #444;
+}
+body.dark-mode .notification-dropdown li:hover {
+  background-color: #2a2a2a;
+}
+body.dark-mode .notification-dropdown li p {
+  color: #f0f0f0;
+}
+body.dark-mode .notification-dropdown li small {
+  color: #bbb;
+}
+body.dark-mode .notification-dropdown li.unread {
+  background: #2a2aff;
+  color: #f0f0f0;
+}
+body.dark-mode .notification-dropdown li.read {
+  background: #1a1a1a;
+  color: #f0f0f0;
+}
+body.dark-mode .dropdown-actions button {
+  color: #66b3ff;
+}
+body.dark-mode .delete-icon {
+  color: #bbb;
+}
+body.dark-mode .delete-icon:hover {
+  color: #ff6666;
+}
+/* Dark mode styles for the bell button */
+body.dark-mode .bell-btn {
+  color: #ffcc00;
+  background-color: #333;
+}
+body.dark-mode .bell-btn:hover {
+  background-color: #444;
+}
+body.dark-mode .badge {
+  background-color: #ff3b3b;
+  box-shadow: 0 0 0 2px #333;
+}

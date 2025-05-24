@@ -1,20 +1,40 @@
+/* Variables */
+:root {
+  --bg-light: #f1f5f9;
+  --bg-white: #ffffff;
+  --bg-dark: #1e293b;
+  --text-dark: #1f2937;
+  --text-light: #f9fafb;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --accent-yellow: #facc15;
+  --radius: 8px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 20px rgba(0,0,0,0.12);
+}
+
 /* Layout */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
 .home-layout {
   display: flex;
   flex-direction: column;
-  background-color: #f1f5f9;
-  min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
-  color: #1f2937;
 }
 
-/* Sticky Header */
+/* Header */
 .sticky-header {
   position: sticky;
   top: 0;
   z-index: 999;
-  background-color: #1e293b;
-  color: white;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,7 +51,6 @@
 .brand-area .text-group {
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .brand-area .title {
@@ -50,13 +69,13 @@
   background: none;
   border: none;
   font-size: 1.8rem;
-  color: #f9fafb;
+  color: var(--text-light);
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .menu-toggle:hover {
-  color: #facc15;
+  color: var(--accent-yellow);
 }
 
 /* Auth Buttons */
@@ -65,68 +84,37 @@
   gap: 0.75rem;
 }
 
-.manage-btn,
-.logout-btn {
-  color: white;
+.manage-btn, .logout-btn, .create-btn {
   padding: 0.45rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: 500;
-  transition: background-color 0.2s;
   text-decoration: none;
+  transition: background-color 0.2s;
+  color: white;
 }
 
 .manage-btn {
-  background-color: #3b82f6;
+  background-color: var(--primary);
 }
-
 .manage-btn:hover {
-  background-color: #2563eb;
+  background-color: var(--primary-hover);
 }
 
 .logout-btn {
-  background-color: #ef4444;
+  background-color: var(--danger);
 }
-
 .logout-btn:hover {
-  background-color: #dc2626;
-}
-.card-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  background-color: var(--danger-hover);
 }
 
-.card-actions button {
-  border: none;
-  background-color: #eee;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+.create-btn {
+  background-color: var(--primary);
+  font-size: 1rem;
+  padding: 0.5rem 1.5rem;
 }
 
-.card-actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-.view-btn {
-  background-color: #e0f7fa;
-  color: #006064;
-}
-
-.edit-btn {
-  background-color: #fff3e0;
-  color: #ef6c00;
-}
-
-.delete-btn {
-  background-color: #ffebee;
-  color: #c62828;
-}
-/* Main Feed */
+/* Feed Layout */
 .feed-main {
   display: flex;
   flex-wrap: wrap;
@@ -134,7 +122,6 @@
   padding: 2rem 1rem;
   gap: 2rem;
   flex: 1;
-  flex-direction: row; /* Desktop mặc định */
 }
 
 .feed-column {
@@ -151,18 +138,18 @@
 
 /* Recipe Card */
 .recipe-card {
-  background: white;
+  background: var(--bg-white);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow);
   cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s;
 }
 
 .recipe-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-hover);
 }
 
 .recipe-img {
@@ -179,33 +166,38 @@
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #1e293b;
+  color: var(--bg-dark);
 }
 
- .create-btn{
-  background-color: #3b82f6;
-  color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
- }
-
-/* Right Sidebar */
-.right-column {
-  width: 250px;
-  background-color: #ffffff;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  display: block;
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.left-column {
+.card-actions button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #eee;
+}
+
+.card-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.view-btn { background-color: #e0f7fa; color: #006064; }
+.edit-btn { background-color: #fff3e0; color: #ef6c00; }
+.delete-btn { background-color: #ffebee; color: #c62828; }
+
+/* Sidebar */
+.left-column, .right-column {
   width: 250px;
-  background-color: #ffffff;
+  background-color: var(--bg-white);
   padding: 1rem;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -219,23 +211,11 @@
   color: #334155;
 }
 
-/* Toggle button mobile */
-.tag-toggle-btn {
-  margin: 1rem;
-  padding: 0.5rem 1rem;
-  background: #f2f2f2;
-  border: none;
-  border-radius: 8px;
-}
-
+/* Search Filters */
 .filter-bar {
   padding: 1rem;
   background: #f9f9f9;
   border-bottom: 1px solid #ddd;
-}
-
-.filter-panel {
-  margin-top: 1rem;
 }
 
 .tag-list {
@@ -253,18 +233,19 @@
 }
 
 .tag-button.selected {
-  background-color: #3b82f6;
+  background-color: var(--primary);
   color: white;
 }
 
 .search-input {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 1px solid #ccc;
   width: 100%;
   margin: 16px 0;
 }
 
+/* Profile */
 .profile-form {
   display: flex;
   flex-direction: column;
@@ -277,53 +258,14 @@
   font-weight: bold;
 }
 
-.profile-form input,
-.profile-form textarea {
+.profile-form input, .profile-form textarea {
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 16px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .feed-main {
-    flex-direction: column;
-    padding: 1rem 0.75rem;
-  }
-
-  .feed-column {
-    max-width: 100%;
-  }
-  .right-column {
-    display: none;
-  }
-
-  .left-column {
-    width: 90%;
-    margin-bottom: 1.5rem;
-  }
-  .hide-on-mobile {
-    display: none;
-  }
-  .app-title {
-    font-size: 1.4rem;
-  }
-
-  
-  .auth-actions {
-    flex-direction:column;
-    gap: 0.5rem;
-  }
-
-  .sticky-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-}
-/* Gợi ý hôm nay - Floating Action Button */
+/* FAB Suggestion */
 .suggestion-fab {
   display: none;
   position: fixed;
@@ -339,57 +281,150 @@
   z-index: 999;
 }
 
-/* Popup nhỏ */
-.suggestion-popup {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  background-color: #fff8e1;
-  border: 1px solid #ffc107;
-  padding: 1rem;
-  border-radius: 10px;
-  width: 250px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.close-popup {
-  background: none;
-  border: none;
-  float: right;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-.settings-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.settings-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: #f8f8f8;
-  border-radius: 8px;
-}
-
-/* Chỉ hiện trên mobile */
 @media (max-width: 768px) {
+  .feed-main {
+    flex-direction: column;
+    padding: 1rem 0.75rem;
+  }
+  .feed-column {
+    max-width: 100%;
+  }
+  .right-column {
+    display: none;
+  }
+  .left-column {
+    width: 90%;
+    margin-bottom: 1.5rem;
+  }
+  .auth-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sticky-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
   .suggestion-fab {
     display: block;
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Dark Mode */
+body.dark-mode {
+  background-color: #1e1e1e;
+  color: #f5f5f5;
 }
-/* Toggle Switch Styling */
+
+/* Layout */
+body.dark-mode .home-layout {
+  background-color: #1e1e1e;
+  color: #f5f5f5;
+}
+
+body.dark-mode .feed-title {
+  color: #f5f5f5;
+}
+
+body.dark-mode .sidebar-title {
+  color: #2e12e6;
+}
+
+/* Header */
+body.dark-mode .sticky-header {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+/* Cards */
+body.dark-mode .recipe-card {
+  background-color: #2a2a2a;
+  color: #f5f5f5;
+}
+
+body.dark-mode .recipe-info h3 {
+  color: #ffffff;
+}
+
+/* Buttons */
+body.dark-mode .create-btn,
+body.dark-mode .manage-btn,
+body.dark-mode .logout-btn,
+body.dark-mode .card-actions button {
+  color: #ffffff;
+  background-color: #333;
+  border: none;
+}
+
+body.dark-mode .card-actions .view-btn {
+  background-color: #004d40;
+}
+
+body.dark-mode .card-actions .edit-btn {
+  background-color: #8d6e63;
+}
+
+body.dark-mode .card-actions .delete-btn {
+  background-color: #b71c1c;
+}
+
+/* Sidebars */
+body.dark-mode .left-column,
+body.dark-mode .right-column {
+  background-color: #2c2c2c;
+  color: #f5f5f5;
+}
+
+/* Filter/Tag/Search */
+body.dark-mode .filter-bar,
+body.dark-mode .filter-panel,
+body.dark-mode .tag-button {
+  background-color: #2c2c2c;
+  color: #e0e0e0;
+}
+
+body.dark-mode .tag-button.selected {
+  background-color: #2563eb;
+  color: white;
+}
+
+body.dark-mode .search-input {
+  background-color: #3a3a3a;
+  color: #f5f5f5;
+  border: 1px solid #555;
+}
+
+/* Form */
+body.dark-mode .profile-form input,
+body.dark-mode .profile-form textarea {
+  background-color: #2c2c2c;
+  color: #f5f5f5;
+  border: 1px solid #555;
+}
+
+/* Popup Suggestion */
+body.dark-mode .suggestion-popup {
+  background-color: #333;
+  color: #fff;
+  border-color: #ff9800;
+}
+
+/* Switch */
+body.dark-mode .settings-item {
+  background-color: #2c2c2c;
+}
+
+/* Auth Buttons hover fix */
+body.dark-mode .manage-btn:hover {
+  background-color: #444;
+}
+
+body.dark-mode .logout-btn:hover {
+  background-color: #c53030;
+}
+
+/* Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -436,19 +471,46 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-/* Optional: Dark Mode global style */
-body.dark-mode {
-  background-color: #1e1e1e;
-  color: #f5f5f5;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-body.dark-mode .feed-title,
-body.dark-mode .sidebar-title {
-  color: #fff;
+.suggestion-popup {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background-color: #fff8e1;
+  border: 1px solid #ffc107;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 250px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
-body.dark-mode a,
-body.dark-mode .manage-btn {
-  color: #fff;
-  background-color: #333;
+.close-popup {
+  background: none;
+  border: none;
+  float: right;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f8f8f8;
+  border-radius: var(--radius);
 }

@@ -40,4 +40,36 @@
     background-color: #e74c3c;
     color: white;
   }
-  
+  /*Dark mode styles*/
+  body.dark-mode .confirm-box {
+    background: #333;
+    color: #f0f0f0;
+  }
+  body.dark-mode .confirm-btn {
+    background-color: #555;
+    color: #f0f0f0;
+  }
+  body.dark-mode .confirm-btn.danger {
+    background-color: #e74c3c;
+    color: white;
+  }
+  body.dark-mode .confirm-overlay {
+    background: rgba(0, 0, 0, 0.6);
+  }
+  body.dark-mode .confirm-actions {
+    gap: 16px;
+  }
+  body.dark-mode .confirm-btn {
+    background-color: #444;
+    color: #f0f0f0;
+  }
+  body.dark-mode .confirm-btn.danger {
+    background-color: #e74c3c;
+    color: white;
+  }
+  body.dark-mode .confirm-btn:hover {
+    background-color: #555;
+  }
+  body.dark-mode .confirm-btn.danger:hover {
+    background-color: #c0392b;
+  }

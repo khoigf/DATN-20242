@@ -45,3 +45,24 @@
   cursor: pointer;
   color: #d00;
 }
+/* Dark mode styles */
+body.dark-mode .user-menu-dropdown {
+  background: #1f2937;
+  color: #f0f0f0;
+  border-color: #374151;
+}
+body.dark-mode .menu-item {
+  color: #f0f0f0;
+}
+body.dark-mode .menu-item:hover {
+  background: #374151;
+}
+body.dark-mode .user-icon-btn {
+  color: #f0f0f0;
+}
+body.dark-mode .user-icon-btn:hover {
+  color: #e0e0e0;
+}
+body.dark-mode .logout-menu-btn {
+  color: #f87171;
+}
