@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
         <aside className="right-column hide-on-mobile">
           <h3 className="sidebar-title">Mẹo nhỏ</h3>
-          <p>📱 Truy cập trang này dễ dàng trên thiết bị di động!</p>
+          <p>📱 Có thể tùy chỉnh cho thông báo và giao diện sáng tối ở đây!</p>
         </aside>
       </main>
     </div>

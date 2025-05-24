@@ -124,3 +124,56 @@
       color: #9ca3af;
     }
   }
+/* Dark mode styles */
+body.dark-mode .recipe-card {
+  background-color: #2d3748; /* Màu nền tối hơn */
+  color: #f7fafc; /* Màu chữ sáng hơn */
+  border: 1px solid #4a5568; /* Viền tối hơn */
+} 
+body.dark-mode .recipe-card:hover {
+  background-color: #4a5568; /* Màu nền khi hover */
+}
+body.dark-mode .home-sidebar {
+  background-color: #1f2937; /* Màu nền tối */
+  color: #f3f4f6; /* Màu chữ sáng */
+}
+body.dark-mode .home-sidebar.open {
+  left: 0; /* Giữ nguyên vị trí khi mở */
+}
+body.dark-mode .home-nav a {
+  color: #f3f4f6; /* Màu chữ sáng */
+}
+body.dark-mode .home-nav a:hover {
+  background-color: #374151; /* Màu nền khi hover */
+}
+body.dark-mode .active-link {
+  background-color: #374151; /* Màu nền cho link đang chọn */
+  font-weight: bold; /* Đậm chữ cho link đang chọn */
+}
+body.dark-mode .home-sidebar-footer {
+  color: #9ca3af; /* Màu chữ nhạt hơn cho footer */
+}
+body.dark-mode .close-btn {
+  color: #f3f4f6; /* Màu chữ sáng cho nút đóng */
+}
+body.dark-mode .home-sidebar-title {
+  color: #f3f4f6; /* Màu chữ sáng cho tiêu đề */
+}
+body.dark-mode .home-btn,
+.logout-btn {
+  color: #f3f4f6; /* Màu chữ sáng cho nút */
+  background-color: #374151; /* Nền tối cho nút */
+  border: none; /* Bỏ viền */
+  padding: 0.5rem 1rem; /* Padding cho nút */
+  border-radius: 0.375rem; /* Bo góc nút */
+  cursor: pointer; /* Con trỏ chuột khi hover */
+}
+body.dark-mode .home-btn:hover,
+.logout-btn:hover {
+  background-color: #4a5568; /* Màu nền khi hover */
+}
+body.dark-mode .home-btn:focus,
+.logout-btn:focus {
+  outline: none; /* Bỏ viền focus */
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5); /* Hiệu ứng focus */
+}
