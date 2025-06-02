@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Bell, Trash2, RefreshCcw } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 import './NotificationBell.css';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET;
@@ -10,6 +11,7 @@ export default function NotificationBell({ token, enabled }) {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const socketRef = useRef(null);
 
@@ -20,6 +22,12 @@ export default function NotificationBell({ token, enabled }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
+      console.log('📥 Notifications fetched:', data);
+      if (data.msg === "Token không hợp lệ") {
+        console.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        navigate('/login');
+        return;
+      }
       setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Lỗi khi tải thông báo:', err);
