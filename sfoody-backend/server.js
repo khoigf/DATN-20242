@@ -16,6 +16,7 @@ const commentRoutes = require('./routes/commentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const MealPlanRoutes = require('./routes/mealPlanRoutes');
+const chatgptRoutes = require('./routes/chatgpt.route');
 
 dotenv.config(); 
 connectDB();
@@ -50,6 +51,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/meal-plans', MealPlanRoutes);
+app.use('/api/chatgpt', chatgptRoutes);
 
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

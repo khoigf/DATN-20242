@@ -1,0 +1,106 @@
+/* === ChatBot.css === */
+
+.chatbot-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 999;
+  transition: background-color var(--transition-fast);
+}
+
+.chatbot-toggle:hover {
+  background-color: #ff7043;
+  transform: scale(1.1);
+}
+
+.chatbot-container {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 300px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-light);
+  color: var(--text-light);
+  border-radius: var(--card-radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 998;
+  transition: all var(--transition-fast);
+}
+
+body.dark .chatbot-container {
+  background-color: var(--background-dark);
+  color: var(--text-dark);
+}
+
+.chat-window {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.chat-bubble {
+  padding: 0.5rem 0.8rem;
+  border-radius: 12px;
+  max-width: 80%;
+  line-height: 1.4;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.chat-bubble.bot {
+  align-self: flex-start;
+  background-color: var(--background-light-alt);
+  color: var(--text-light);
+}
+
+body.dark .chat-bubble.bot {
+  background-color: var(--background-dark-alt);
+  color: var(--text-dark);
+}
+
+.chat-input {
+  display: flex;
+  padding: 0.5rem;
+  border-top: 1px solid #ddd;
+  background-color: inherit;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.chat-input button {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+}

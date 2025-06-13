@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -15,8 +16,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserList from './pages/UserList';
 import PostList from './pages/PostList';
 import ReportList from './pages/ReportList';
+import MealPlannerPage from './pages/MealPlannerPage';
+import ChatBot from './components/Chatbot';
 
 function App() {
+  const [showChat, setShowChat] = useState(false);
   return (
     <Router>
       <Routes>
@@ -31,12 +35,15 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
+        <Route path="/meal-planner" element={<MealPlannerPage />} />
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserList />} />
         <Route path="/admin/posts" element={<PostList />} />
         <Route path="/admin/reports" element={<ReportList />} />
       </Routes>
+      {showChat && <ChatBot />}
+      <button className="chatbot-toggle" onClick={() => setShowChat(!showChat)}>💬</button>
     </Router>
   );
 }

@@ -9,6 +9,7 @@ import {
   TextSelect,
   UserRoundCog,
   Settings,
+  MenuSquareIcon,
 } from 'lucide-react';
 import './HomeSidebar.css';
 
@@ -42,6 +43,12 @@ export default function HomeSidebar({ isOpen, onClose, token, role }) {
           <Link to="/recipes/manage" className={isActive('/recipes/manage')}>
             <TextSelect size={18} style={{ marginRight: '8px' }} />
             Quản lý bài viết
+          </Link>
+        )}
+        {token && (
+          <Link to="/meal-planner" className={isActive('/meal-planner')}>
+            <MenuSquareIcon size={18} style={{ marginRight: '8px' }} />
+            Tạo thực đơn
           </Link>
         )}
         {token && role === 'admin' && (

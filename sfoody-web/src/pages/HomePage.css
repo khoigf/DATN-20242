@@ -308,6 +308,7 @@ body.dark .loader {
   position: fixed;
   right: 24px;
   bottom: 24px;
+  margin-bottom: 60px;
   background-color: var(--primary-color);
   color: white;
   font-size: 24px;

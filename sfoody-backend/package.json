@@ -21,8 +21,9 @@
     "jsonwebtoken": "^9.0.2",
     "meilisearch": "^0.50.0",
     "mongoose": "^8.13.0",
-    "multer": "^1.4.5-lts.3",
+    "multer": "^2.0.1",
     "nodemailer": "^6.10.1",
+    "openai": "^5.3.0",
     "sfoody-backend": "file:",
     "socket.io": "^4.8.1"
   },
