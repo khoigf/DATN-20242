@@ -167,131 +167,138 @@ export default function RecipeModal({ recipe: initialRecipe, onClose }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>×</button>
+  <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <button className="close-btn" onClick={onClose}>×</button>
 
-        <img
-          src={recipe.image_url || '/default-recipe.jpg'}
-          alt={recipe.title}
-          className="modal-image"
-        />
-
+      {/* Image */}
+      <img src={recipe.image_url || '/default-recipe.jpg'} alt={recipe.title} className="modal-image" />
+      {/* Title + Favorite Button */}
+      <div className="modal-header">
         <h2 className="modal-title">{recipe.title}</h2>
-        <p className="modal-author">Được đăng bởi: {recipe.user_id?.username || 'Ẩn danh'}</p>
-        <p className="modal-description">{recipe.description}</p>
-
-        <div className="modal-tags">
-          <strong>Tags:</strong>{' '}
-          {recipe.tags?.length ? recipe.tags.map(tag => tag.name).join(', ') : 'Không có'}
-        </div>
-
-        <div className="modal-ingredients">
-          <h3>Nguyên liệu</h3>
-          <ul>
-            {recipe.ingredients?.length ? (
-              recipe.ingredients.map((item, index) => (
-                <li key={index}>
-                  {item.name || 'Ẩn danh'} - {item.quantity}
-                </li>
-              ))
-            ) : (
-              <li>Không có nguyên liệu</li>
-            )}
-          </ul>
-        </div>
-        
-        <button className={`favorite-btn ${isFavorite ? 'favorited' : ''}`} onClick={toggleFavorite}>
+        <button
+          className={`favorite-btn ${isFavorite ? 'favorited' : ''}`}
+          onClick={toggleFavorite}
+        >
           {isFavorite ? '❤️ Bỏ yêu thích' : '🤍 Yêu thích'}
         </button>
+      </div>
+      <p className="modal-author">Được đăng bởi: {recipe.user_id?.username || 'Ẩn danh'}</p>
+      <p className="modal-description">{recipe.description}</p>
 
-        <div className="modal-instructions">
-          <h3>Hướng dẫn</h3>
-          <p>{recipe.instruction}</p>
-        </div>
-
-        {recipe.video_url && (
-          <div className="modal-video">
-            <h3>Video hướng dẫn</h3>
-            <iframe
-              width="100%"
-              height="315"
-              src={getYoutubeEmbedUrl(recipe.video_url)}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-        )}
-
-        <div className="modal-info">
-          <p><strong>Thời gian chuẩn bị:</strong> {recipe.prep_time} phút</p>
-          <p><strong>Thời gian nấu:</strong> {recipe.cook_time} phút</p>
-          <p><strong>Khẩu phần:</strong> {recipe.servings}</p>
-        </div>
-
-        <div className="modal-average-rating">
-          <p><strong>Đánh giá trung bình:</strong> {recipe.averageRating ? `${recipe.averageRating} ⭐` : 'Chưa có đánh giá'}</p>
-        </div>
-
-        <div className="report-section">
-          <strong>Báo cáo công thức: </strong>
-          <button className="report-btn" onClick={() => setShowReportForm(!showReportForm)}>
-            {showReportForm ? 'Hủy' : 'Báo cáo'}
-          </button>
-
-          {showReportForm && (
-            <form onSubmit={handleReportSubmit} className="report-form">
-              <textarea
-                value={reportContent}
-                onChange={(e) => setReportContent(e.target.value)}
-                placeholder="Lý do báo cáo..."
-                required
-              />
-              <button type="submit">Gửi báo cáo</button>
-            </form>
-          )}
-        </div>
-
-        <div className="comment-section">
-          <h3>Bình luận & Đánh giá</h3>
-          <form onSubmit={handleCommentSubmit} className="comment-form">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Viết bình luận..."
-              required
-            />
-            <div className="rating-group">
-              <label>Đánh giá: </label>
-              <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-                {[5, 4, 3, 2, 1].map(r => (
-                  <option key={r} value={r}>{r} ⭐</option>
-                ))}
-              </select>
-            </div>
-            <button type="submit">Gửi</button>
-          </form>
-
-          <div className="comments-list">
-            {comments.length === 0 ? (
-              <p>Chưa có bình luận nào.</p>
-            ) : (
-              comments.map((c, i) => (
-                <div key={i} className="comment-item">
-                  <div className="comment-header">
-                    <strong>{c.user_id?.username || 'Ẩn danh'}</strong>
-                    <span>({c.rating} ⭐): {c.content}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+      {/* Tags */}
+      <div className="modal-tags">
+        <strong>TAGS:</strong>{' '}
+        {recipe.tags?.length ? recipe.tags.map(tag => tag.name).join(', ') : 'Không có'}
       </div>
 
-      {toast && <ToastNotification message={toast} onClose={() => setToast('')} />}
+      {/* Ingredients */}
+      <section className="modal-ingredients">
+        <h3>Nguyên liệu</h3>
+        <ul>
+          {recipe.ingredients?.length ? (
+            recipe.ingredients.map((item, index) => (
+              <li key={index}>{item.name || 'Ẩn danh'} - {item.quantity}</li>
+            ))
+          ) : (
+            <li>Không có nguyên liệu</li>
+          )}
+        </ul>
+      </section>
+
+      {/* Instructions */}
+      <section className="modal-instructions">
+        <h3>Hướng dẫn</h3>
+        <p>{recipe.instruction}</p>
+      </section>
+
+      {/* Video */}
+      {recipe.video_url && (
+        <section className="modal-video">
+          <h3>Video hướng dẫn</h3>
+          <iframe
+            width="100%"
+            height="315"
+            src={getYoutubeEmbedUrl(recipe.video_url)}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </section>
+      )}
+
+      {/* Recipe Info */}
+      <div className="modal-info">
+        <p><strong>Thời gian chuẩn bị:</strong> {recipe.prep_time} phút</p>
+        <p><strong>Thời gian nấu:</strong> {recipe.cook_time} phút</p>
+        <p><strong>Khẩu phần:</strong> {recipe.servings}</p>
+      </div>
+
+      {/* Rating */}
+      <div className="modal-average-rating">
+        <p><strong>Đánh giá trung bình:</strong> {recipe.averageRating ? `${recipe.averageRating} ⭐` : 'Chưa có đánh giá'}</p>
+      </div>
+
+      {/* Report Form */}
+      <section className="report-section">
+        <strong>Báo cáo công thức: </strong>
+        <button className="report-btn" onClick={() => setShowReportForm(!showReportForm)}>
+          {showReportForm ? 'Hủy' : 'Báo cáo'}
+        </button>
+        {showReportForm && (
+          <form onSubmit={handleReportSubmit} className="report-form">
+            <textarea
+              value={reportContent}
+              onChange={(e) => setReportContent(e.target.value)}
+              placeholder="Lý do báo cáo..."
+              required
+            />
+            <button type="submit">Gửi báo cáo</button>
+          </form>
+        )}
+      </section>
+
+      {/* Comments */}
+      <section className="comment-section">
+        <h3>Bình luận & Đánh giá</h3>
+        <form onSubmit={handleCommentSubmit} className="comment-form">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Viết bình luận..."
+            required
+          />
+          <div className="rating-group">
+            <label>Đánh giá: </label>
+            <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+              {[5, 4, 3, 2, 1].map(r => (
+                <option key={r} value={r}>{r} ⭐</option>
+              ))}
+            </select>
+          </div>
+          <button type="submit">Gửi</button>
+        </form>
+
+        <div className="comments-list">
+          {comments.length === 0 ? (
+            <p>Chưa có bình luận nào.</p>
+          ) : (
+            comments.map((c, i) => (
+              <div key={i} className="comment-item">
+                <div className="comment-header">
+                  <strong>{c.user_id?.username || 'Ẩn danh'}</strong>
+                  <span>({c.rating} ⭐): {c.content}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
+
+    {/* Toast */}
+    {toast && <ToastNotification message={toast} onClose={() => setToast('')} />}
+  </div>
   );
 }

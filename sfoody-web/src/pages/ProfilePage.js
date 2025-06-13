@@ -70,28 +70,30 @@ export default function ProfilePage() {
     };
 
   return (
-    <div className="home-layout">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+    <div className="home-container">
+          <header className="header">
+            <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+            <Link to="/"> 
+              <h1 className="header-title">S-Foody</h1>
+            </Link>
+            <div className="auth-actions">
+              {token ? (
+                <>
+                  <UserMenu onLogout={handleLogout} />
+                  <NotificationBell token={token} />
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="login-button">Đăng nhập</Link>
+                  <Link to="/register" className="login-button">Đăng ký</Link>
+                </>
+              )}
+            </div>
+          </header>
 
-      <header className="sticky-header">
-        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-        <div className="brand-area">
-          <Link to="/" className="logo">
-            <img src="/logo.png" alt="S-Foody" width={50} height={50} />
-          </Link>
-          <div className="text-group">
-            <h1 className="title">S-Foody</h1>
-            <p className="subtitle">Hôm nay ăn gì?</p>
-          </div>
-        </div>
-        <div className="auth-actions">
-          <UserMenu onLogout={handleLogout} />
-          <NotificationBell token={token} />
-        </div>
-      </header>
-
-      <main className="feed-main">
-        <div className="feed-column">
+      <div className="home-content">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+        <main className="main-content">
           <h2>👤 Hồ sơ cá nhân</h2>
           {user ? (
             <div className="profile-card">
@@ -105,24 +107,30 @@ export default function ProfilePage() {
           ) : <p>Đang tải hồ sơ...</p>}
 
           <h2>❤️ Công thức yêu thích</h2>
-          {favorites.length > 0 ? favorites.map((fav, index) => (
-            <div key={`fav-${fav._id}-${index}`} className="recipe-card">
-              <img className="recipe-img" src={fav.recipe?.image_url || '/default-recipe.jpg'} alt={fav.recipe?.title} 
-                onClick={() => openRecipeModal(fav.recipe)}/>
-              <div className="recipe-info">
-                <h3>{fav.recipe?.title}</h3>
-                <p>{fav.recipe?.description}</p>
-              </div>
-              <button onClick={() => removeFavorite(fav.id)} className="remove-btn">Bỏ yêu thích ❌</button>
+          {favorites.length > 0 ? (
+            <div className="favorites-grid">
+              {favorites.map((fav, index) => (
+                <div key={`fav-${fav._id}-${index}`} className="recipe-card">
+                  <img
+                    className="recipe-image"
+                    src={fav.recipe?.image_url || '/default-recipe.jpg'}
+                    alt={fav.recipe?.title}
+                    onClick={() => openRecipeModal(fav.recipe)}
+                  />
+                  <div className="recipe-info">
+                    <h3>{fav.recipe?.title}</h3>
+                    <p>⏱ {fav.recipe?.cook_time} phút</p>
+                  </div>
+                  <button onClick={() => removeFavorite(fav.id)} className="remove-btn">Bỏ yêu thích</button>
+                </div>
+              ))}
             </div>
-          )) : <p>🫥 Không có công thức yêu thích nào.</p>}
+          ) : (
+            <p>🫥 Không có công thức yêu thích nào.</p>
+          )}
+          </main>
         </div>
-
-        <aside className="right-column hide-on-mobile">
-          <h3 className="sidebar-title">Gợi ý hôm nay</h3>
-          <p>🍲 Khám phá món ăn mới mỗi ngày!</p>
-        </aside>
-      </main>
+      
         {selectedRecipe && (
             <RecipeModal
             recipe={selectedRecipe}

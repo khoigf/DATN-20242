@@ -1,9 +1,11 @@
+// File: SearchPage.jsx
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import RecipeModal from '../components/RecipeModal';
 import UserMenu from '../components/UserMenu';
 import Sidebar from '../components/HomeSidebar';
 import NotificationBell from '../components/NotificationBell';
+import './HomePage.css';
 
 const BASE_URL = process.env.REACT_APP_API;
 
@@ -26,7 +28,6 @@ export default function SearchPage() {
   const navigate = useNavigate();
   const observer = useRef();
 
-  // Load tag & ingredient data
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -45,22 +46,19 @@ export default function SearchPage() {
     fetchTags();
   }, []);
 
-  // Fetch recipes with scroll-based pagination
   const fetchRecipes = useCallback(async () => {
     if (loading || !hasMore) return;
 
     setLoading(true);
     const filters = [...selectedTags, ...selectedIngredients];
-
     const url = new URL(`${BASE_URL}/search`);
     url.searchParams.append('q', searchQuery);
-    filters.forEach((f) => url.searchParams.append('tags', f)); // cả tag & ingredient đều là tag ở backend
-    url.searchParams.append('offset', page * 20); // page size = 20
+    filters.forEach((f) => url.searchParams.append('tags', f));
+    url.searchParams.append('offset', page * 20);
 
     try {
       const res = await fetch(url.toString());
       const data = await res.json();
-
       setRecipes((prev) => [...prev, ...data]);
       setHasMore(data.length === 20);
       setPage((prev) => prev + 1);
@@ -72,53 +70,40 @@ export default function SearchPage() {
     }
   }, [searchQuery, selectedTags, selectedIngredients, page, loading, hasMore]);
 
-  // Reset when search or filters change
   useEffect(() => {
-    if (hasSearched) {
-      setRecipes([]);
+    const delayDebounce = setTimeout(() => {
       setPage(0);
+      setRecipes([]);
       setHasMore(true);
-    }
-  }, [searchQuery, selectedTags, selectedIngredients, hasSearched]);
+      setHasSearched(true);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, selectedTags, selectedIngredients]);
 
   useEffect(() => {
     if (page === 0 && hasMore) fetchRecipes();
   }, [page, fetchRecipes, hasMore]);
 
-  // Infinite scroll
-  const lastRecipeRef = useCallback(
-    (node) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) fetchRecipes();
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore, fetchRecipes]
-  );
+  const lastRecipeRef = useCallback((node) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) fetchRecipes();
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, fetchRecipes]);
 
-  // Handlers
   const toggleTag = (tagName) => {
-    const updated = selectedTags.includes(tagName)
-      ? selectedTags.filter((t) => t !== tagName)
-      : [...selectedTags, tagName];
-    setSelectedTags(updated);
+    setSelectedTags((prev) =>
+      prev.includes(tagName) ? prev.filter((t) => t !== tagName) : [...prev, tagName]
+    );
   };
 
   const toggleIngredient = (name) => {
-    const updated = selectedIngredients.includes(name)
-      ? selectedIngredients.filter((i) => i !== name)
-      : [...selectedIngredients, name];
-    setSelectedIngredients(updated);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(0);
-    setRecipes([]);
-    setHasMore(true);
-    setHasSearched(true);
+    setSelectedIngredients((prev) =>
+      prev.includes(name) ? prev.filter((i) => i !== name) : [...prev, name]
+    );
   };
 
   const handleLogout = () => {
@@ -127,121 +112,116 @@ export default function SearchPage() {
     navigate('/');
   };
 
-  // UI
   return (
-    <div className="home-layout">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
-
-      <header className="sticky-header">
+    <div className="home-container">
+      <header className="header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-
-        <form onSubmit={handleSearch}>
+        <Link to="/"> 
+          <h1 className="header-title">S-Foody</h1>
+        </Link>
+        <div className="search-bar">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm công thức nấu ăn..."
-            style={{ padding: '0.5rem', borderRadius: '10px' }}
+            placeholder="Nhập công thức nấu ăn..."
           />
-          <button type="submit" className="manage-btn" style={{ marginLeft: '0.5rem' }}>
-            Tìm
-          </button>
-        </form>
-
-        <div className="auth-actions">
-          {token ? (
-            <>
-              <UserMenu onLogout={handleLogout} />
-              <NotificationBell token={token} />
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="manage-btn">Đăng nhập</Link>
-              <Link to="/register" className="manage-btn">Đăng ký</Link>
-            </>
-          )}
         </div>
+        {token ? (
+          <div className="auth-actions">
+            <UserMenu onLogout={handleLogout} />
+            <NotificationBell token={token} />
+          </div>
+        ) : (
+          <button className="login-button" onClick={() => navigate('/login')}>Đăng nhập</button>
+        )}
       </header>
 
       <main className="feed-main">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+
         <div className="left-column">
-          <button
-            className="tag-toggle-btn"
-            onClick={() => setShowTagFilter((prev) => !prev)}
-          >
-            {showTagFilter ? 'Hiện bộ lọc 🔽' : 'Ẩn bộ lọc 🔼'}
+          <button className="filter-toggle-btn" onClick={() => setShowTagFilter((prev) => !prev)}>
+            {showTagFilter ? '⬇ Hiện bộ lọc' : '⬆ Ẩn bộ lọc'}
           </button>
 
-          {!showTagFilter && (
-            <>
-              <div>
-                <h3 className="sidebar-title">🎯 Bộ lọc theo tag</h3>
-                {Object.entries(tags).map(([category, tagList]) => (
-                  <div key={category}>
-                    <h4>{category}</h4>
-                    <div className="tag-list">
-                      {tagList.map((tag) => (
-                        <button
-                          key={tag._id}
-                          className={`tag-button ${selectedTags.includes(tag.name) ? 'selected' : ''}`}
-                          onClick={() => toggleTag(tag.name)}
-                        >
-                          {tag.name}
-                        </button>
-                      ))}
+          {showTagFilter && (
+            <div className="tag-filter-container">
+              <section className="filter-section">
+                <h3 className="section-title">🎯 Bộ lọc theo tag</h3>
+                <div className="tag-columns">
+                  {Object.entries(tags).map(([category, tagList]) => (
+                    <div key={category} className="tag-group">
+                      <h4 className="tag-group-title">{category}</h4>
+                      <div className="tag-list">
+                        {tagList.map((tag) => (
+                          <button
+                            key={tag._id}
+                            className={`tag-button ${selectedTags.includes(tag.name) ? 'selected' : ''}`}
+                            onClick={() => toggleTag(tag.name)}
+                          >
+                            {tag.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ marginTop: '1rem' }}>
-                <h4 className="sidebar-title">🌿 Tìm kiếm phổ biến</h4>
-                <div className="tag-list">
-                  {popularTags.map((tag) => (
-                    <button
-                      key={tag._id}
-                      className={`tag-button ${selectedIngredients.includes(tag.name) ? 'selected' : ''}`}
-                      onClick={() => toggleIngredient(tag.name)}
-                    >
-                      {tag.name}
-                    </button>
                   ))}
                 </div>
-              </div>
-            </>
+              </section>
+
+              <section className="filter-section">
+                <h4 className="section-title">🌿 Tìm kiếm phổ biến</h4>
+                <div className="tag-group">
+                  <div className="tag-list">
+                    {popularTags.map((tag) => (
+                      <button
+                        key={tag._id}
+                        className={`tag-button ${selectedIngredients.includes(tag.name) ? 'selected' : ''}`}
+                        onClick={() => toggleIngredient(tag.name)}
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            </div>
           )}
         </div>
+
         <div className="feed-column">
-          <h2 className="feed-title">Kết quả tìm kiếm</h2>
-          {recipes.map((recipe, index) => {
-            const isLast = index === recipes.length - 1;
-            return (
-              <div
-                ref={isLast ? lastRecipeRef : null}
-                className="recipe-card"
-                key={`recipe-${recipe.id}-${index}`}
-                onClick={() => setSelectedRecipe(recipe)}
-              >
-                <img
-                  src={recipe.image_url || '/default-recipe.jpg'}
-                  className="recipe-img"
-                  alt={recipe.title}
-                />
-                <div className="recipe-info">
-                  <h3>{recipe.title}</h3>
-                  <p>{recipe.description}</p>
+          <h2 className="feed-title">📋 Kết quả tìm kiếm</h2>
+          <div className="recipe-grid">
+            {recipes.map((recipe, index) => {
+              const isLast = index === recipes.length - 1;
+              return (
+                <div
+                  ref={isLast ? lastRecipeRef : null}
+                  className="recipe-card"
+                  key={`recipe-${recipe.id}-${index}`}
+                  onClick={() => setSelectedRecipe(recipe)}
+                >
+                  <img
+                    src={recipe.image_url || '/default-recipe.jpg'}
+                    className="recipe-image"
+                    alt={recipe.title}
+                  />
+                  <div className="recipe-info">
+                    <h3 className="recipe-name">{recipe.title}</h3>
+                    <p className="recipe-description">{recipe.description}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-          {loading && <p>🔄 Đang tải thêm...</p>}
-          {!hasMore && !loading && <p>✅ Đã tải toàn bộ kết quả.</p>}
+              );
+            })}
+          </div>
+
+          {loading && <p className="loading-text">🔄 Đang tải thêm...</p>}
+          {!hasMore && !loading && hasSearched && <p className="end-text">✅ Đã tải toàn bộ kết quả.</p>}
 
           {selectedRecipe && (
             <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
           )}
         </div>
-
       </main>
     </div>
   );

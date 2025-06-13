@@ -162,46 +162,46 @@
   }
 }
 /* Dark mode styles */
-body.dark-mode .Cmodal-container {
+body.dark .Cmodal-container {
   background: #1f2937;
   color: #f0f0f0;
   border-color: #374151;
 }
-body.dark-mode .create-form input,
-body.dark-mode .create-form textarea,
-body.dark-mode .create-form select {
+body.dark .create-form input,
+body.dark .create-form textarea,
+body.dark .create-form select {
   background: #374151;
   color: #f0f0f0;
   border-color: #4b5563;
 }
-body.dark-mode .create-form button {
+body.dark .create-form button {
   background-color: #2563eb;
   color: #f0f0f0;
 }
-body.dark-mode .create-form button:hover {
+body.dark .create-form button:hover {
   background-color: #1d4ed8;
 }
-body.dark-mode .create-form label,
-body.dark-mode .close-btn {
+body.dark .create-form label,
+body.dark .close-btn {
   color: #f0f0f0;
 }
 /* Dark mode styles for tag list */
-body.dark-mode .tag-list label {
+body.dark .tag-list label {
   background-color: #374151;
   color: #f0f0f0;
 }
-body.dark-mode .tag-list input[type="checkbox"] {
+body.dark .tag-list input[type="checkbox"] {
   accent-color: #2563eb;
 }
-body.dark-mode .remove-ingredient-btn {
+body.dark .remove-ingredient-btn {
   background: #ef4444;
   color: #f0f0f0;
 }
-body.dark-mode .remove-ingredient-btn:hover {
+body.dark .remove-ingredient-btn:hover {
   background: #dc2626;
 }
-body.dark-mode .ingredient-row select,
-body.dark-mode .ingredient-row input {
+body.dark .ingredient-row select,
+body.dark .ingredient-row input {
   background: #374151;
   color: #f0f0f0;
   border-color: #4b5563;

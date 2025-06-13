@@ -187,7 +187,20 @@ export default function EditRecipeModal({ recipe, onClose }) {
               placeholder="Khẩu phần ăn"
               onChange={handleChange}
             />
-
+            <label>
+              Ảnh món ăn (chọn mới để thay):
+              <input type="file" name="image" accept="image/*" onChange={handleChange} />
+            </label>
+            <label>
+              Video YouTube (tùy chọn):
+              <input
+                type="text"
+                name="video_url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={formData.video_url || ''}
+                onChange={handleChange}
+            />
+            </label>
             <label>Chọn Tags:</label>
             <Select
               isMulti
@@ -201,6 +214,39 @@ export default function EditRecipeModal({ recipe, onClose }) {
               placeholder="Chọn tag..."
               className="react-select-container"
               classNamePrefix="select"
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                singleValue: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                input: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                placeholder: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                option: (provided, state) => ({
+                  ...provided,
+                  color: 'black',
+                  backgroundColor: state.isFocused
+                    ? '#e2e8f0' // màu hover nhạt
+                    : 'white',  // màu nền dropdown
+                }),
+                multiValueLabel: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                multiValueRemove: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+              }}
             />
 
             <label>Nguyên liệu:</label>
@@ -229,21 +275,6 @@ export default function EditRecipeModal({ recipe, onClose }) {
               </div>
             ))}
             <button type="button" onClick={addIngredient}>+ Thêm nguyên liệu</button>
-
-            <label>
-              Ảnh món ăn (chọn mới để thay):
-              <input type="file" name="image" accept="image/*" onChange={handleChange} />
-            </label>
-            <label>
-              Video YouTube (tùy chọn):
-              <input
-                type="text"
-                name="video_url"
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={formData.video_url || ''}
-                onChange={handleChange}
-            />
-            </label>
 
             <button type="submit">Lưu thay đổi</button>
           </form>

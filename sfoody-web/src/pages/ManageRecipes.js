@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import Sidebar from '../components/HomeSidebar';
 import RecipeModal from '../components/RecipeModal';
 import CreateRecipeModal from '../components/CreatePostCard';
@@ -13,13 +14,12 @@ export default function ManageRecipePage() {
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [showSuggestion, setShowSuggestion] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const observer = useRef();
 
   const token = localStorage.getItem('token');
@@ -27,7 +27,6 @@ export default function ManageRecipePage() {
   const BASE_URL = process.env.REACT_APP_API;
   const navigate = useNavigate();
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!token) navigate('/login');
   }, [token, navigate]);
@@ -79,7 +78,7 @@ export default function ManageRecipePage() {
     if (node) observer.current.observe(node);
   }, [loading, hasMore]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     setConfirmDialog({
       title: 'Xác nhận xóa',
       message: 'Bạn có chắc chắn muốn xóa công thức này?',
@@ -89,9 +88,9 @@ export default function ManageRecipePage() {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
           });
-          setRecipes(recipes.filter((r) => r._id !== id));
-        } catch (error) {
-          console.error(error);
+          setRecipes(recipes.filter(r => r._id !== id));
+        } catch (err) {
+          console.error(err);
         }
         setConfirmDialog(null);
       },
@@ -106,20 +105,20 @@ export default function ManageRecipePage() {
   };
 
   return (
-    <div className="home-layout">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
-
-      <header className="sticky-header">
+    <div className="home-container">
+      <header className="header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-        <div className="brand-area">
-          <Link to="/" className="logo">
-            <img src="/logo.png" alt="S-Foody" width={50} height={50} />
-          </Link>
-          <div className="text-group">
-            <h1 className="title">Quản lý công thức</h1>
-            <p className="subtitle">Bài viết của bạn</p>
+        <Link to="/"> 
+          <h1 className="header-title">S-Foody</h1>
+        </Link>
+        <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Tìm công thức của bạn..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
-        </div>
         <div className="auth-actions">
           {token ? (
             <>
@@ -128,71 +127,64 @@ export default function ManageRecipePage() {
             </>
           ) : (
             <>
-              <Link to="/login" className="manage-btn">Đăng nhập</Link>
-              <Link to="/register" className="manage-btn">Đăng ký</Link>
+              <Link to="/login" className="login-button">Đăng nhập</Link>
+              <Link to="/register" className="login-button">Đăng ký</Link>
             </>
           )}
         </div>
       </header>
 
-      <main className="feed-main">
-          {/* Gợi ý hôm nay - dành cho mobile */}
-        <div className="suggestion-fab" onClick={() => setShowSuggestion(true)}>
-          💡
-        </div>
+      <div className="home-content">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
 
-        {showSuggestion && (
-          <div className="suggestion-popup">
-            <button className="close-popup" onClick={() => setShowSuggestion(false)}>✖</button>
-            <h3>Gợi ý hôm nay</h3>
-            <p>🍲 Khám phá món ăn mới mỗi ngày!</p>
-          </div>
-        )}
-        <div className="feed-column">
-          <button className="create-btn" onClick={() => setShowCreateModal(true)}>Tạo công thức mới ✍️</button>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="🔍 Tìm công thức của bạn..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <h2 className="feed-title">📋 Công thức của tôi</h2>
-          {recipes.map((recipe, index) => {
-            const isLast = index === recipes.length - 1;
-            return (
-              <div
-                ref={isLast ? lastRecipeRef : null}
-                className="recipe-card"
-                key={recipe._id}
-              >
-                <img
-                  className="recipe-img"
-                  src={recipe.image_url || '/default-recipe.jpg'}
-                  alt={recipe.title}
-                  onClick={() => setSelectedRecipe(recipe)}
-                />
-                <div className="recipe-info">
-                  <h3>{recipe.title}</h3>
-                  <p>{recipe.description}</p>
-                  <div className="card-actions">
-                    <button className="view-btn" onClick={() => setSelectedRecipe(recipe)}>👁️</button>
-                    <button className="edit-btn" onClick={() => setShowCreateModal(recipe)}>✏️</button>
-                    <button className="delete-btn" onClick={() => handleDelete(recipe._id)}>🗑️</button>
+        <main className="main-content">
+          <h2 className="section-title">📋 Công thức của tôi</h2>
+
+          <div className="recipe-grid">
+            {recipes.map((recipe, index) => {
+              const isLast = index === recipes.length - 1;
+              return (
+                <div
+                  className="recipe-card"
+                  key={recipe._id}
+                  ref={isLast ? lastRecipeRef : null}
+                >
+                  <img
+                    className="recipe-image"
+                    src={recipe.image_url || '/default-recipe.jpg'}
+                    alt={recipe.title}
+                    onClick={() => setSelectedRecipe(recipe)}
+                  />
+                  <div className="recipe-info">
+                    <div className="recipe-name">{recipe.title}</div>
+                    <div className="recipe-meta">{recipe.description}</div>
+                    <div className="card-actions">
+                      <button className="action-btn view" title="Xem công thức" onClick={() => setSelectedRecipe(recipe)}>
+                        <FaEye />
+                      </button>
+                      <button className="action-btn edit" title="Chỉnh sửa" onClick={() => setShowCreateModal(recipe)}>
+                        <FaEdit />
+                      </button>
+                      <button className="action-btn delete" title="Xóa" onClick={() => handleDelete(recipe._id)}>
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-          {loading && <p>Đang tải thêm...</p>}
-          {!hasMore && !loading && <p>✅ Đã tải hết công thức.</p>}
-        </div>
+              );
+            })}
+          </div>
 
-        <aside className="right-column hide-on-mobile">
-          <h3 className="sidebar-title">Gợi ý hôm nay</h3>
-          <p>🍲 Khám phá món ăn mới mỗi ngày!</p>
-        </aside>
-      </main>
+          {loading && <div className="loader">Đang tải thêm...</div>}
+          {!hasMore && !loading && <div className="loader">✅ Đã tải hết công thức.</div>}
+
+          <button
+            className="floating-add-button"
+            onClick={() => setShowCreateModal(true)}
+            title="Tạo công thức mới"
+          >＋</button>
+        </main>
+      </div>
 
       {selectedRecipe && (
         <RecipeModal recipe={selectedRecipe} onClose={() => setSelectedRecipe(null)} />
@@ -201,12 +193,12 @@ export default function ManageRecipePage() {
         typeof showCreateModal === 'object' ? (
           <EditRecipeModal recipe={showCreateModal} onClose={() => {
             setShowCreateModal(false);
-            loadRecipes(1, search); // Refresh list
+            loadRecipes(1, search);
           }} />
         ) : (
           <CreateRecipeModal onClose={() => {
             setShowCreateModal(false);
-            loadRecipes(1, search); // Refresh list
+            loadRecipes(1, search);
           }} />
         )
       )}

@@ -1,179 +1,137 @@
-/* Sidebar gốc */
+:root {
+  --sidebar-bg: #e2e2e2;
+  --sidebar-text: #333;
+  --sidebar-border: #ddd;
+  --sidebar-hover: #ff4f1a;
+  --primary-color: #ff7043;
+}
+[data-theme='dark'] {
+    --sidebar-bg: #1e1e1e;
+    --sidebar-text: #eee;
+    --sidebar-border: #333;
+    --sidebar-hover: #2a2a2a;
+}
+
 .home-sidebar {
-    position: fixed;
-    top: 0;
-    left: -260px;
-    width: 150px;
-    height: 94vh;
-    background-color: #1f2937;
-    color: white;
-    padding: 1rem;
-    transition: left 0.3s ease;
-    z-index: 1000;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 150px;
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 1rem;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.home-sidebar.open {
+  left: 0;
+}
+
+.home-sidebar a {
+  text-decoration: none !important;
+}
+
+/* Close button */
+.home-close-btn {
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  align-self: flex-end;
+}
+.home-close-btn:hover {
+  color: var(--sidebar-hover);
+}
+
+/* Logo */
+.home-sidebar-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+/* Navigation */
+.home-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-nav a {
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: var(--sidebar-text);
+  font-size: 15px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.home-nav a:hover {
+  background-color: var(--sidebar-hover);
+}
+
+.home-active-link {
+  background-color: var(--primary-color);
+  color: white !important;
+}
+
+/* Footer button */
+.home-sidebar-footer {
+  text-decoration: none !important;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 50px;
+}
+
+.home-home-btn,
+.home-logout-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.home-home-btn:hover,
+.home-logout-btn:hover {
+  background-color: #ff5722;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (min-width: 1024px) {
+  .home-sidebar {
+    transform: translateX(-240px); /* Ẩn mặc định */
   }
-  
-  /* Sidebar mở */
+
   .home-sidebar.open {
-    left: 0;
+    transform: translateX(0);
   }
-  
-  /* Nút đóng */
-  .close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    align-self: flex-end;
-    cursor: pointer;
-  }
-  
-  /* Tiêu đề */
-  .home-sidebar-title {
-    margin: 1rem 0;
-    font-size: 1.3rem;
-    font-weight: bold;
-    text-align: center;
-  }
-  
-  /* Menu */
-  .home-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .home-nav a {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    color: white;
-    font-size: 1rem;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: background 0.2s ease;
-  }
-  
-  .home-nav a:hover {
-    background-color: #374151;
-  }
-  
-  /* Link đang chọn */
-  .active-link {
-    background-color: #374151;
-    font-weight: bold;
-  }
-  
-  /* Footer */
-  .home-sidebar-footer {
-    text-decoration: none;
-    margin-top: auto;
-    margin-bottom: 50px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  /* 🔁 Responsive chỉnh Sidebar cho mobile */
-  @media (max-width: 150px) {
-    .home-sidebar {
-      width: 100%;
-      height: 100vh;
-      left: -100%;
-    } 
-  
-    .home-sidebar.open {
-      left: 0;
-    }
-  
-    .home-nav a {
-      font-size: 1.1rem;
-    }
-  
-    .home-sidebar-title {
-      font-size: 1.5rem;
-    }
-  
-    .home-btn, .logout-btn {
-      font-size: 1rem;
-    }
-  }
-  /* Dark mode */
-  @media (prefers-color-scheme: dark) {
-    .home-sidebar {
-      background-color: #111827;
-      color: #f3f4f6;
-    }
-  
-    .home-nav a {
-      color: #f3f4f6;
-    }
-  
-    .home-nav a:hover {
-      background-color: #374151;
-    }
-  
-    .active-link {
-      background-color: #374151;
-      font-weight: bold;
-    }
-  
-    .home-sidebar-footer {
-      color: #9ca3af;
-    }
-  }
-/* Dark mode styles */
-body.dark-mode .recipe-card {
-  background-color: #2d3748; /* Màu nền tối hơn */
-  color: #f7fafc; /* Màu chữ sáng hơn */
-  border: 1px solid #4a5568; /* Viền tối hơn */
-} 
-body.dark-mode .recipe-card:hover {
-  background-color: #4a5568; /* Màu nền khi hover */
 }
-body.dark-mode .home-sidebar {
-  background-color: #1f2937; /* Màu nền tối */
-  color: #f3f4f6; /* Màu chữ sáng */
+
+/* Overlay background (optional) */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 998;
+  display: none;
 }
-body.dark-mode .home-sidebar.open {
-  left: 0; /* Giữ nguyên vị trí khi mở */
-}
-body.dark-mode .home-nav a {
-  color: #f3f4f6; /* Màu chữ sáng */
-}
-body.dark-mode .home-nav a:hover {
-  background-color: #374151; /* Màu nền khi hover */
-}
-body.dark-mode .active-link {
-  background-color: #374151; /* Màu nền cho link đang chọn */
-  font-weight: bold; /* Đậm chữ cho link đang chọn */
-}
-body.dark-mode .home-sidebar-footer {
-  color: #9ca3af; /* Màu chữ nhạt hơn cho footer */
-}
-body.dark-mode .close-btn {
-  color: #f3f4f6; /* Màu chữ sáng cho nút đóng */
-}
-body.dark-mode .home-sidebar-title {
-  color: #f3f4f6; /* Màu chữ sáng cho tiêu đề */
-}
-body.dark-mode .home-btn,
-.logout-btn {
-  color: #f3f4f6; /* Màu chữ sáng cho nút */
-  background-color: #374151; /* Nền tối cho nút */
-  border: none; /* Bỏ viền */
-  padding: 0.5rem 1rem; /* Padding cho nút */
-  border-radius: 0.375rem; /* Bo góc nút */
-  cursor: pointer; /* Con trỏ chuột khi hover */
-}
-body.dark-mode .home-btn:hover,
-.logout-btn:hover {
-  background-color: #4a5568; /* Màu nền khi hover */
-}
-body.dark-mode .home-btn:focus,
-.logout-btn:focus {
-  outline: none; /* Bỏ viền focus */
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5); /* Hiệu ứng focus */
+
+.sidebar-overlay.open {
+  display: block;
 }

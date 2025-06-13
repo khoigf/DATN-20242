@@ -27,5 +27,6 @@ const upload = multer({
 
 router.get('/me', verifyToken, userController.getProfile);
 router.put('/me', verifyToken, upload.fields([{ name: 'avatar', maxCount: 1 }]), userController.updateProfile);
+router.put('/me/password', verifyToken, userController.changePassword);
 
 module.exports = router;

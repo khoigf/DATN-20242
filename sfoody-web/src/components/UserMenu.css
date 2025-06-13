@@ -4,10 +4,16 @@
 
 .user-icon-btn {
   background: none;
-  color: #ffffff;
+  color: #000000;
+  border-radius: 50%;
   border: none;
   cursor: pointer;
   padding: 6px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.user-icon-btn:hover {
+  color: #ffffff;
+  background-color: #343941;
 }
 
 .user-menu-dropdown {
@@ -46,23 +52,23 @@
   color: #d00;
 }
 /* Dark mode styles */
-body.dark-mode .user-menu-dropdown {
+body.dark .user-menu-dropdown {
   background: #1f2937;
   color: #f0f0f0;
   border-color: #374151;
 }
-body.dark-mode .menu-item {
+body.dark .menu-item {
   color: #f0f0f0;
 }
-body.dark-mode .menu-item:hover {
+body.dark .menu-item:hover {
   background: #374151;
 }
-body.dark-mode .user-icon-btn {
+body.dark .user-icon-btn {
   color: #f0f0f0;
 }
-body.dark-mode .user-icon-btn:hover {
+body.dark .user-icon-btn:hover {
   color: #e0e0e0;
 }
-body.dark-mode .logout-menu-btn {
+body.dark .logout-menu-btn {
   color: #f87171;
 }

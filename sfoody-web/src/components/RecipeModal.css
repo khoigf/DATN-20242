@@ -1,206 +1,268 @@
+/* Overlay modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(17, 24, 39, 0.85); /* màu nền tối đẹp hơn */
+  inset: 0;
+  background-color: rgba(17, 24, 39, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  backdrop-filter: blur(4px); /* hiệu ứng mờ nền */
+  backdrop-filter: blur(4px);
 }
 
+/* Modal content */
 .modal-content {
-  background-color: #111827;
+  background-color: #1e293b;
   color: #f9fafb;
   padding: 2rem;
   border-radius: 16px;
-  max-width: 600px;
+  max-width: 640px;
   width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  animation: fadeIn 0.35s ease;
-  overflow-y: auto;
-  max-height: 90vh;
   animation: fadeIn 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* Close button */
 .close-btn {
   position: absolute;
-  top: 14px;
+  top: 16px;
   right: 20px;
   background: transparent;
   border: none;
   font-size: 1.5rem;
-  color: #f9fafb;
+  color: #f1f5f9;
   cursor: pointer;
   transition: color 0.2s;
 }
-
 .close-btn:hover {
-  color: #ef4444; /* đỏ nhạt khi hover */
+  color: #f87171;
 }
 
+/* Recipe Image */
 .modal-image {
   width: 100%;
   height: auto;
+  max-height: 300px;
   border-radius: 12px;
-  margin-bottom: 1.2rem;
   object-fit: cover;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  margin-bottom: 1.2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.modal-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: #facc15;
-}
-
-.modal-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #d1d5db;
+.modal-author {
+  font-size: 0.95rem;
+  color: #94a3b8;
   margin-bottom: 1rem;
 }
 
-.modal-instructions h3,
-.modal-info p,
-.comment-section h3 {
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  color: #60a5fa;
+/* Description */
+.modal-description {
+  color: #d1d5db;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
-.modal-info p {
+/* Tags */
+.modal-tags {
   font-size: 0.95rem;
   color: #cbd5e1;
+  margin-bottom: 1rem;
 }
 
-.comment-section {
+/* Ingredients list */
+.modal-ingredients {
+  margin-bottom: 1rem;
+}
+.modal-ingredients h3 {
+  color: #60a5fa;
+  margin-bottom: 0.5rem;
+}
+.modal-ingredients ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.modal-ingredients li {
+  margin-bottom: 0.3rem;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.5rem;
+  flex: 1;
+}
+
+.favorite-btn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #f1f5f9;
+}
+.favorite-btn.favorited {
+  color: red;
+}
+.favorite-btn:hover {
+  color: #ef4444;
+}
+
+/* Instructions */
+.modal-instructions h3 {
+  color: #60a5fa;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+.modal-instructions p {
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+/* Video embed */
+.modal-video {
+  margin-top: 1rem;
+}
+.modal-video h3 {
+  color: #60a5fa;
+  margin-bottom: 0.5rem;
+}
+
+/* Info section */
+.modal-info {
+  margin-top: 1rem;
+  color: #cbd5e1;
+}
+.modal-info p {
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Average rating */
+.modal-average-rating {
+  margin-top: 0.8rem;
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+/* Report section */
+.report-section {
   margin-top: 1.5rem;
 }
-
-.comment-form textarea {
+.report-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.report-btn:hover {
+  background-color: #dc2626;
+}
+.report-form {
+  margin-top: 0.5rem;
+}
+.report-form textarea {
   width: 100%;
   padding: 0.75rem;
   border-radius: 8px;
-  border: none;
   background-color: #1e293b;
   color: #f1f5f9;
+  border: 1px solid #334155;
   resize: vertical;
-  margin-bottom: 0.75rem;
-  font-family: inherit;
+}
+.report-form button {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.report-form button:hover {
+  background-color: #dc2626;
 }
 
+/* Comments */
+.comment-section {
+  margin-top: 2rem;
+}
+.comment-section h3 {
+  color: #60a5fa;
+  margin-bottom: 0.75rem;
+}
+
+/* Comment form */
+.comment-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  resize: vertical;
+  margin-bottom: 0.75rem;
+}
 .comment-form textarea::placeholder {
   color: #94a3b8;
 }
-
 .rating-group {
-  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
-
 .rating-group select {
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
   background-color: #334155;
-  color: #f8fafc;
+  color: #f1f5f9;
   border: none;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
 }
-
 .comment-form button {
   padding: 0.6rem 1.2rem;
-  border: none;
   background-color: #3b82f6;
   color: white;
   font-weight: 600;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.25s ease;
 }
-
 .comment-form button:hover {
   background-color: #2563eb;
 }
 
+/* Comments list */
 .comments-list {
   margin-top: 1rem;
   max-height: 200px;
   overflow-y: auto;
   padding-right: 0.5rem;
-  scroll-behavior: smooth;
 }
-
 .comment-item {
-  padding: 0.75rem;
   background-color: #1f2937;
+  padding: 0.75rem;
   border-radius: 8px;
   margin-bottom: 0.6rem;
-  color: #e5e7eb;
   font-size: 0.95rem;
+  color: #e5e7eb;
 }
-
 .comment-header strong {
   color: #facc15;
 }
 
-.report-section {
-  margin-top: 20px;
-}
-
-.report-form textarea {
-  width: 100%;
-  padding: 8px;
-  margin-top: 10px;
-  min-height: 80px;
-  resize: vertical;
-}
-
-.report-form button {
-  margin-top: 10px;
-  padding: 6px 12px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.report-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  border-radius: 4px;
-}
-.report-btn:hover {
-  background-color: #d32f2f;
-}
-.favorite-btn {
-  background: none;
-  border: none;
-  color: #9ca3af; /* sáng hơn một chút */
-  transition: color 0.2s;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-.favorite-btn:hover {
-  color: #ef4444; /* đỏ nhẹ khi hover */
-}
-
-.favorite-btn.favorited {
-  color: red;
-}
-
-/* Animation */
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;

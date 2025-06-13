@@ -107,32 +107,30 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="home-layout">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
-
-      <header className="sticky-header">
-        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-        <div className="brand-area">
-          <Link to="/" className="logo">
-            <img src="/logo.png" alt="S-Foody" width={50} height={50} />
-          </Link>
-          <div className="text-group">
-            <h1 className="title">S-Foody</h1>
-            <p className="subtitle">Hôm nay ăn gì?</p>
-          </div>
-        </div>
-        <div className="auth-actions">
-          {token && (
-            <>
-              <UserMenu onLogout={handleLogout} />
-              <NotificationBell token={token} />
-            </>
-          )}
-        </div>
-      </header>
-
-      <main className="feed-main">
-        <div className="feed-column">
+    <div className="home-container">
+              <header className="header">
+                <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
+                <Link to="/"> 
+                  <h1 className="header-title">S-Foody</h1>
+                </Link>
+                <div className="auth-actions">
+                  {token ? (
+                    <>
+                      <UserMenu onLogout={handleLogout} />
+                      <NotificationBell token={token} />
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" className="login-button">Đăng nhập</Link>
+                      <Link to="/register" className="login-button">Đăng ký</Link>
+                    </>
+                  )}
+                </div>
+              </header>
+    
+      <div className="home-content">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
+        <main className="main-content">
           <h2 className="feed-title">✏️ Chỉnh sửa hồ sơ</h2>
           <form onSubmit={handleSubmit} className="profile-form" encType="multipart/form-data">
             <label>
@@ -141,7 +139,7 @@ export default function EditProfilePage() {
             </label>
             <label>
               Email
-              <input type="email" name="email" value={formData.email} onChange={handleChange} required maxLength={100} />
+              <input type="email" name="email" value={formData.email} readOnly maxLength={100} />
             </label>
             <label>
               Ảnh đại diện (tải ảnh)
@@ -158,18 +156,15 @@ export default function EditProfilePage() {
               Giới thiệu bản thân
               <textarea name="bio" rows="4" value={formData.bio} onChange={handleChange}></textarea>
             </label>
-            <button type="submit" className="manage-btn" disabled={loading}>
-              {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </button>
-          </form>
+            <div className="button-group">
+              <button type="submit" className="manage-btn" disabled={loading}>
+                {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </button>
+              <button type="button" className="cancel-btn" onClick={() => navigate('/profile')}>Hủy</button>
+            </div>
+            </form>
+          </main>
         </div>
-
-        <aside className="right-column hide-on-mobile">
-          <h3 className="sidebar-title">Lưu ý</h3>
-          <p>💡 Bạn có thể thay đổi tên, email, ảnh đại diện và mô tả cá nhân tại đây.</p>
-        </aside>
-      </main>
-
       {toast && <ToastNotification message={toast} onClose={() => setToast('')} />}
     </div>
   );

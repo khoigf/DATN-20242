@@ -22,11 +22,11 @@ export default function HomeSidebar({ isOpen, onClose, token, role }) {
     navigate('/login');
   };
 
-  const isActive = (path) => location.pathname === path ? 'active-link' : '';
+  const isActive = (path) => location.pathname === path ? 'home-active-link' : '';
 
   return (
     <aside className={`home-sidebar ${isOpen ? 'open' : ''}`}>
-      <button className="close-btn" onClick={onClose}>✕</button>
+      <button className="home-close-btn" onClick={onClose}>×</button>
       <h2 className="home-sidebar-title">S-Foody</h2>
 
       <nav className="home-nav">
@@ -62,20 +62,20 @@ export default function HomeSidebar({ isOpen, onClose, token, role }) {
         {!token ? (
           <>
             <Link to="/login">
-              <button className="home-btn">
+              <button className="home-home-btn">
                 <LogIn size={16} style={{ marginRight: '6px' }} />
                 Đăng nhập
               </button>
             </Link>
             <Link to="/register">
-              <button className="home-btn">
+              <button className="home-home-btn">
                 <UserPlus size={16} style={{ marginRight: '6px' }} />
                 Đăng ký
               </button>
             </Link>
           </>
         ) : (
-          <button onClick={handleLogout} className="logout-btn">
+          <button onClick={handleLogout} className="home-logout-btn">
             <LogOut size={16} style={{ marginRight: '6px' }} />
             Đăng xuất
           </button>

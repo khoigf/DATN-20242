@@ -14,9 +14,15 @@ export default function NotificationBell({ token, enabled }) {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const socketRef = useRef(null);
-
   const fetchNotifications = async () => {
+    let isEnabled = localStorage.getItem('notificationsEnabled');
+    isEnabled = isEnabled === 'true' || isEnabled === null; // Default to true if not set
     setLoading(true);
+    if (!isEnabled) {
+      console.log('🔔 Disable Notification');
+      setNotifications([]);
+      setLoading(false);
+    }else {
     try {
       const res = await fetch(`${API_URL}/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -34,6 +40,7 @@ export default function NotificationBell({ token, enabled }) {
     } finally {
       setLoading(false);
     }
+  }
   };
 
   useEffect(() => {

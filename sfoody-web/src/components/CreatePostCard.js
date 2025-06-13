@@ -106,6 +106,39 @@ export default function CreateRecipeModal({ onClose }) {
             placeholder="Chọn tag..."
             className="react-select-container"
             classNamePrefix="select"
+            styles={{
+                control: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                singleValue: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                input: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                placeholder: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                option: (provided, state) => ({
+                  ...provided,
+                  color: 'black',
+                  backgroundColor: state.isFocused
+                    ? '#e2e8f0' // màu hover nhạt
+                    : 'white',  // màu nền dropdown
+                }),
+                multiValueLabel: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+                multiValueRemove: (provided) => ({
+                  ...provided,
+                  color: 'black',
+                }),
+              }}
           />
 
           <label>Nguyên liệu:</label>

@@ -46,6 +46,7 @@ exports.getFavorites = async (req, res) => {
                 title: favorite.recipe_id.title,
                 image_url: favorite.recipe_id.image_url? `${process.env.IMAGE_URL}${favorite.recipe_id.image_url}` : null,
                 description: favorite.recipe_id.description,
+                cook_time: favorite.recipe_id.cook_time,
             },
         }));
         
