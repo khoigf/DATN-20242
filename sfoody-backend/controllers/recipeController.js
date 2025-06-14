@@ -1,7 +1,9 @@
 const Recipe = require('../models/recipeModel');
 const RecipeTag = require('../models/recipeTagModel');
 const RecipeIngredient = require('../models/recipeIngredient');
+const Tag = require('../models/tagModel');
 const Comment = require('../models/commentModel');
+const MealPlan = require('../models/mealPlanModel');
 const client = require('../utils/searchClient');
 const index = client.index('recipes');
 const fs = require('fs');
@@ -306,5 +308,86 @@ exports.deleteRecipe = async (req, res) => {
     res.status(200).json({ message: 'Deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+exports.suggestRecipes = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // ==== Ngày hôm nay (00:00) ====
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // ==== Tìm 1 meal plan có sẵn của tuần bắt đầu từ hôm nay ====
+    const existingPlans = await MealPlan.find({
+      user_id: userId,
+      type: 'weekly',
+      date: today
+    }).limit(1);
+
+    if (existingPlans.length > 0) {
+      return res.status(200).json({ plan: existingPlans[0] });
+    }
+
+    // ==== Lấy ID của các tag theo meal_time ====
+    const tags = await Tag.find({ name: { $in: ['Món sáng', 'Món trưa', 'Món tối'] } });
+    const TAGS = {};
+    tags.forEach(tag => {
+      if (tag.name === 'Món sáng') TAGS.breakfast = tag._id;
+      if (tag.name === 'Món trưa') TAGS.lunch = tag._id;
+      if (tag.name === 'Món tối') TAGS.dinner = tag._id;
+    });
+
+    const mealTimes = ['breakfast', 'lunch', 'dinner'];
+    const recipesByMealTime = {};
+
+    // ==== Lấy danh sách Recipe theo từng loại bữa ====
+    for (const mealTime of mealTimes) {
+      const tagId = TAGS[mealTime];
+      const recipeTagLinks = await RecipeTag.find({ tag_id: tagId });
+      const recipeIds = recipeTagLinks.map(link => link.recipe_id);
+
+      const recipes = await Recipe.find({
+        _id: { $in: recipeIds },
+        status: 1
+      }).lean();
+
+      recipesByMealTime[mealTime] = recipes;
+    }
+
+    // ==== Sinh thực đơn 7 ngày x 3 bữa ====
+    const usedRecipeIds = new Set();
+    const meals = [];
+
+    for (let day = 0; day < 7; day++) {
+      for (const mealTime of mealTimes) {
+        const available = recipesByMealTime[mealTime].filter(
+          r => !usedRecipeIds.has(r._id.toString())
+        );
+
+        if (available.length === 0) continue;
+
+        const selected = available[Math.floor(Math.random() * available.length)];
+        usedRecipeIds.add(selected._id.toString());
+
+        meals.push({
+          meal_time: mealTime,
+          recipe_id: selected._id
+        });
+      }
+    }
+
+    // ==== Tạo meal plan mới ====
+    const newPlan = await MealPlan.create({
+      user_id: userId,
+      type: 'weekly',
+      date: today,
+      meals
+    });
+
+    res.status(200).json({ plan: newPlan });
+  } catch (err) {
+    console.error('Lỗi tạo meal plan:', err);
+    res.status(500).json({ error: 'Không thể tạo thực đơn gợi ý.' });
   }
 };

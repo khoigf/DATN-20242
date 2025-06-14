@@ -28,6 +28,7 @@ router.post('/',verifyToken, upload.fields([
   ]), recipeController.createRecipe);
 router.get('/',recipeController.getAllRecipes);
 router.get('/user', verifyToken, recipeController.getRecipesByUserId);
+router.get('/suggest',verifyToken, recipeController.suggestRecipes);
 router.get('/:id', recipeController.getRecipeById);
 
 router.put('/:id', verifyToken, upload.fields([
