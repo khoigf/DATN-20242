@@ -2,7 +2,7 @@ const MealPlan = require('../models/mealPlanModel');
 const Recipe = require('../models/recipeModel');
 const Favorite = require('../models/favoriteModel');
 const Tag = require('../models/tagModel');
-const ingredients = require('../models/ingredientModel');
+const Ingredient = require('../models/ingredientModel');
 const RecipeIngredient = require('../models/recipeIngredient');
 
 exports.createMealPlan = async (req, res) => {
@@ -57,13 +57,11 @@ exports.deleteMealPlan = async (req, res) => {
 exports.suggestMealPlan = async (req, res) => {
   try {
     const { user_id, days = 7, constraints = {} } = req.body;
+    const mealsPerDay = ['breakfast', 'lunch', 'dinner'];
     const result = [];
     const usedRecipeIds = new Set();
 
     const allTags = await Tag.find().lean();
-    const allRecipes = await Recipe.find({ status: 1 }).lean();
-    const favorites = await Favorite.find({ user_id }).populate('recipe_id');
-
     const getTagIdByName = (name) => allTags.find(t => t.name.toLowerCase() === name.toLowerCase())?._id?.toString();
     const getTagIdsByNames = (names) => names.map(getTagIdByName).filter(Boolean);
 
@@ -74,79 +72,75 @@ exports.suggestMealPlan = async (req, res) => {
       child: ['Món ăn cho bé', 'Giàu vitamin'],
     };
 
-    const nutritionGroups = {
+    const balanceNutritionGroups = {
       meat: ['Bò', 'Lợn', 'Gà', 'Hải sản', 'Trứng', 'Cá'],
       veggie: ['Rau xanh', 'Củ', 'Trái cây'],
       carb: ['Giàu tinh bột', 'Ít tinh bột']
     };
-    const nutritionGroupTagIds = {};
-    for (const group in nutritionGroups) {
-      nutritionGroupTagIds[group] = getTagIdsByNames(nutritionGroups[group]);
-    }
 
     const profileTagIds = constraints.profile ? getTagIdsByNames(profileTagsMap[constraints.profile] || []) : [];
     const excludeTagIds = getTagIdsByNames(constraints.exclude_tags || []);
     const cookTimeTagId = constraints.max_cook_time ? getTagIdByName(constraints.max_cook_time) : null;
-    const excludeIngredientNames = (constraints.exclude_ingredients || []).map(name => name.toLowerCase());
 
+    // Lấy danh sách nguyên liệu bị loại trừ (chuyển thành _id)
+    const excludeIngredientNames = (constraints.exclude_ingredients || []).map(name => name.toLowerCase());
+    const excludedIngredients = await Ingredient.find({
+      name: { $in: excludeIngredientNames }
+    }).lean();
+    const excludedIngredientIds = excludedIngredients.map(i => i._id.toString());
+
+    // Lấy danh sách công thức yêu thích
+    const favorites = await Favorite.find({ user_id }).populate('recipe_id');
     const preferredTags = new Set();
     favorites.forEach(fav => {
       (fav.recipe_id?.tags || []).forEach(tagId => preferredTags.add(tagId.toString()));
     });
 
-    const favoriteRecipes = favorites.map(fav => fav.recipe_id).filter(Boolean);
+    // Lấy tất cả công thức (status: 1)
+    const allRecipes = await Recipe.find({ status: 1 }).lean();
+    const recipeIds = allRecipes.map(r => r._id);
+    const allRecipeIngredients = await RecipeIngredient.find({ recipe_id: { $in: recipeIds } }).lean();
 
-    const isBalanced = typeof constraints.balance === 'boolean' ? constraints.balance : true;
+    // Tạo map công thức → danh sách nguyên liệu
+    const recipeIngredientMap = {};
+    allRecipeIngredients.forEach(ri => {
+      const rid = ri.recipe_id.toString();
+      if (!recipeIngredientMap[rid]) recipeIngredientMap[rid] = [];
+      recipeIngredientMap[rid].push(ri.ingredient_id.toString());
+    });
 
+    // Duyệt lọc công thức
     const filterRecipe = (recipe) => {
-      if (constraints.profile && !recipe.tags?.some(t => profileTagIds.includes(t.toString()))) return false;
-      if (excludeTagIds.length > 0 && recipe.tags?.some(t => excludeTagIds.includes(t.toString()))) return false;
-      if (cookTimeTagId && !recipe.tags?.includes(cookTimeTagId)) return false;
-      if (excludeIngredientNames.length > 0 && recipe.ingredients?.some(ing =>
-        excludeIngredientNames.includes(ing.name.toLowerCase()))) return false;
+      const tags = recipe.tags?.map(id => id.toString()) || [];
+      const ingredientIds = recipeIngredientMap[recipe._id.toString()] || [];
+
+      if (profileTagIds.length > 0 && !tags.some(t => profileTagIds.includes(t))) return false;
+      if (excludeTagIds.length > 0 && tags.some(t => excludeTagIds.includes(t))) return false;
+      if (cookTimeTagId && !tags.includes(cookTimeTagId)) return false;
+      if (excludedIngredientIds.length > 0 && ingredientIds.some(iid => excludedIngredientIds.includes(iid))) return false;
+
       return true;
     };
 
-    const getFallbackRecipe = (pickedIds) => {
-      const fallbackPool = allRecipes.filter(r =>
-        !pickedIds.has(r._id.toString()) &&
-        !excludeTagIds.includes(r.tags) &&
-        !excludeIngredientNames.some(name =>
-          r.ingredients?.some(ing => ing.name.toLowerCase() === name)
-        )
-      );
-      if (fallbackPool.length > 0) {
-        const r = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
-        pickedIds.add(r._id.toString());
-        return r;
-      }
-      return null;
-    };
+    const nutritionGroupTagIds = {};
+    for (const group in balanceNutritionGroups) {
+      nutritionGroupTagIds[group] = getTagIdsByNames(balanceNutritionGroups[group]);
+    }
 
-    const pickBalancedRecipes = (available, pickedIds) => {
+    const pickBalancedRecipes = (available) => {
       const picks = [];
+      const used = new Set();
       for (const group of ['carb', 'meat', 'veggie']) {
-        const options = available.filter(r =>
-          !pickedIds.has(r._id.toString()) &&
+        const options = available.filter(
+          r => !used.has(r._id.toString()) &&
           (r.tags || []).some(t => nutritionGroupTagIds[group].includes(t.toString()))
         );
         if (options.length > 0) {
-          const r = options[Math.floor(Math.random() * options.length)];
-          picks.push(r);
-          pickedIds.add(r._id.toString());
+          const random = options[Math.floor(Math.random() * options.length)];
+          picks.push(random);
+          used.add(random._id.toString());
         } else {
-          // fallback: ưu tiên món yêu thích
-          const favOptions = favoriteRecipes.filter(r =>
-            !pickedIds.has(r._id.toString()) &&
-            (r.tags || []).some(t => nutritionGroupTagIds[group].includes(t.toString()))
-          );
-          if (favOptions.length > 0) {
-            const r = favOptions[Math.floor(Math.random() * favOptions.length)];
-            picks.push(r);
-            pickedIds.add(r._id.toString());
-          } else {
-            picks.push(getFallbackRecipe(pickedIds));
-          }
+          picks.push(null); // fallback
         }
       }
       return picks;
@@ -155,15 +149,13 @@ exports.suggestMealPlan = async (req, res) => {
     const today = new Date();
 
     for (let i = 0; i < days; i++) {
-      const pickedIds = new Set();
-
       let available = allRecipes.filter(r =>
-        !usedRecipeIds.has(r._id.toString()) &&
-        filterRecipe(r)
+        !usedRecipeIds.has(r._id.toString()) && filterRecipe(r)
       );
 
+      // Sắp xếp theo sở thích nếu có
       if (preferredTags.size > 0) {
-        available.sort((a, b) => {
+        available = available.sort((a, b) => {
           const aScore = (a.tags || []).filter(t => preferredTags.has(t.toString())).length;
           const bScore = (b.tags || []).filter(t => preferredTags.has(t.toString())).length;
           return bScore - aScore;
@@ -171,24 +163,24 @@ exports.suggestMealPlan = async (req, res) => {
       }
 
       let picked = [];
-
-      if (isBalanced) {
-        picked = pickBalancedRecipes(available, pickedIds);
+      if (constraints.balance) {
+        picked = pickBalancedRecipes(available);
       } else {
         while (picked.length < 3 && available.length > 0) {
           const r = available[Math.floor(Math.random() * available.length)];
           if (!constraints.no_repeat || !usedRecipeIds.has(r._id.toString())) {
             picked.push(r);
-            pickedIds.add(r._id.toString());
+            usedRecipeIds.add(r._id.toString());
           }
         }
 
-        // fallback nếu chưa đủ
+        // Fallback: thêm ngẫu nhiên nếu chưa đủ
         while (picked.length < 3) {
-          let fallback = favoriteRecipes.find(r => !pickedIds.has(r._id.toString()));
-          if (!fallback) fallback = getFallbackRecipe(pickedIds);
-          if (!fallback) break;
-          picked.push(fallback);
+          const remain = allRecipes.filter(r => !usedRecipeIds.has(r._id.toString()));
+          if (remain.length === 0) break;
+          const r = remain[Math.floor(Math.random() * remain.length)];
+          picked.push(r);
+          usedRecipeIds.add(r._id.toString());
         }
       }
 
@@ -200,7 +192,7 @@ exports.suggestMealPlan = async (req, res) => {
         user_id,
         type: constraints.type || 'daily',
         date: new Date(today.getTime() + i * 86400000),
-        meals: ['breakfast', 'lunch', 'dinner'].map((meal_time, idx) => ({
+        meals: mealsPerDay.map((meal_time, idx) => ({
           meal_time,
           recipe_id: picked[idx]?._id || null
         }))

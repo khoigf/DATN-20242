@@ -931,3 +931,155 @@ body.dark .success-box {
   background-color: #1b5e20;
   color: #a5d6a7;
 }
+/* === MealPlanCard Styles === */
+.Mmeal-plan-card {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+}
+
+.Mplan-date {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.Mmeal-item {
+  margin-bottom: 1rem;
+}
+
+.Mmeal-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.25rem;
+}
+
+.Mrecipe-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.Mrecipe-preview img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.Mrecipe-preview div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.Mname {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.Mrecipe-preview p {
+  font-size: 0.8rem;
+  color: #64748b;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.Mno-recipe {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.meal-setup-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  max-width: 600px;
+  margin: auto;
+  margin-top: 2rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.meal-form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: #1e293b;
+}
+
+.meal-form-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.meal-form-group input,
+.meal-form-group select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: #f8fafc;
+  transition: border 0.2s;
+}
+
+.meal-form-group input:focus,
+.meal-form-group select:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.suggest-btn {
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.suggest-btn:hover {
+  background-color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .meal-setup-card {
+    padding: 1rem;
+  }
+  .Mname {
+    white-space: normal;
+  }
+}

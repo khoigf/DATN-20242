@@ -11,7 +11,9 @@ const BASE_URL = process.env.REACT_APP_API;
 const MealPlannerPage = () => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+  const userId = localStorage.getItem('user_id');
   const navigate = useNavigate();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [constraints, setConstraints] = useState({
     days: 7,
@@ -28,6 +30,7 @@ const MealPlannerPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // --- HANDLE FORM ---
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setConstraints(prev => ({
@@ -41,6 +44,7 @@ const MealPlannerPage = () => {
     setConstraints(prev => ({ ...prev, [key]: values }));
   };
 
+  // --- HANDLE SUGGEST ---
   const handleSuggest = async () => {
     setLoading(true);
     setError('');
@@ -53,24 +57,22 @@ const MealPlannerPage = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          user_id: localStorage.getItem('user_id'),
+          user_id: userId,
           days: constraints.days,
           constraints: { ...constraints, save: false }
         })
       });
       const data = await res.json();
-      if (res.ok) {
-        setSuggestedPlans(data);
-      } else {
-        setError(data.message || 'Đã xảy ra lỗi.');
-      }
-    } catch (err) {
+      if (res.ok) setSuggestedPlans(data);
+      else setError(data.message || 'Đã xảy ra lỗi.');
+    } catch {
       setError('Lỗi mạng.');
     } finally {
       setLoading(false);
     }
   };
 
+  // --- CONFIRM AND SAVE PLAN ---
   const handleConfirm = async () => {
     try {
       const res = await fetch(`${BASE_URL}/meal-plans`, {
@@ -81,20 +83,32 @@ const MealPlannerPage = () => {
         },
         body: JSON.stringify(suggestedPlans)
       });
-      if (res.ok) {
-        setSuccess(true);
-      } else {
-        const data = await res.json();
-        setError(data.message || 'Lỗi khi lưu thực đơn.');
-      }
-    } catch (err) {
+      const data = await res.json();
+      if (res.ok) setSuccess(true);
+      else setError(data.message || 'Lỗi khi lưu thực đơn.');
+    } catch {
       setError('Lỗi mạng.');
     }
   };
 
+  // --- DELETE A MEAL ---
+  const handleDeleteMeal = (dayIndex, mealTime) => {
+    const updated = [...suggestedPlans];
+    const meals = updated[dayIndex].meals.map(m => m.meal_time === mealTime ? { ...m, recipe_id: null } : m);
+    updated[dayIndex].meals = meals;
+    setSuggestedPlans(updated);
+  };
+
+  // --- EDIT A MEAL ---
+  const handleEditMeal = (dayIndex, mealTime, newRecipeId) => {
+    const updated = [...suggestedPlans];
+    const meals = updated[dayIndex].meals.map(m => m.meal_time === mealTime ? { ...m, recipe_id: newRecipeId } : m);
+    updated[dayIndex].meals = meals;
+    setSuggestedPlans(updated);
+  };
+
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.clear();
     navigate('/login');
   };
 
@@ -102,84 +116,87 @@ const MealPlannerPage = () => {
     <div className="home-container">
       <header className="header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-        <Link to="/">
-          <h1 className="header-title">S-Foody</h1>
-        </Link>
-        <h1 className="header-title">Lập thực đơn</h1>
-        {token ? (
-          <div className="auth-actions">
-            <UserMenu onLogout={handleLogout} />
-            <NotificationBell token={token} />
-          </div>
-        ) : (
-          <button className="login-button" onClick={() => navigate('/login')}>Đăng nhập</button>
-        )}
+        <Link to="/"><h1 className="header-title">S-Foody</h1></Link>
+        <div className="auth-actions">
+          {token ? (
+            <>
+              <UserMenu onLogout={handleLogout} />
+              <NotificationBell token={token} />
+            </>
+          ) : <button onClick={() => navigate('/login')}>Đăng nhập</button>}
+        </div>
       </header>
 
       <div className="home-content">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
 
         <main className="main-content">
-          <h2 className="section-title">🔧 Thiết lập yêu cầu thực đơn</h2>
+          {/* ==== FORM LẬP KẾ HOẠCH ==== */}
+          <h2 className="section-title">📝 Lập thực đơn</h2>
+          <div className="meal-setup-card">
+            <h3 className="meal-form-title">⚙️ Tùy chọn thực đơn</h3>
 
-          <div className="suggestion-card">
-            <div className="form-section">
-              <div className="form-group">
-                <label>Số ngày:</label>
-                <input type="number" name="days" value={constraints.days} onChange={handleInputChange} />
-              </div>
+            <div className="meal-form-group">
+              <label>Số ngày</label>
+              <input type="number" name="days" value={constraints.days} onChange={handleInputChange} />
+            </div>
 
-              <div className="form-group">
-                <label>Hồ sơ:</label>
-                <select name="profile" value={constraints.profile} onChange={handleInputChange}>
-                  <option value="">--Chọn--</option>
-                  <option value="gym">Tập gym</option>
-                  <option value="sick">Người ốm</option>
-                  <option value="elder">Người cao tuổi</option>
-                  <option value="child">Trẻ em</option>
-                </select>
-              </div>
+            <div className="meal-form-group">
+              <label>Hồ sơ người dùng</label>
+              <select name="profile" value={constraints.profile} onChange={handleInputChange}>
+                <option value="">-- Chọn hồ sơ --</option>
+                <option value="gym">🏋️ Tập gym</option>
+                <option value="sick">🤒 Người ốm</option>
+                <option value="elder">👴 Người cao tuổi</option>
+                <option value="child">🧒 Trẻ em</option>
+              </select>
+            </div>
 
-              <div className="form-group checkbox-group">
-                <label><input type="checkbox" name="balance" checked={constraints.balance} onChange={handleInputChange} /> Cân bằng dinh dưỡng</label>
-                <label><input type="checkbox" name="no_repeat" checked={constraints.no_repeat} onChange={handleInputChange} /> Không trùng món</label>
-              </div>
+            <div className="meal-form-group checkbox-list">
+              <label><input type="checkbox" name="balance" checked={constraints.balance} onChange={handleInputChange} /> ⚖️ Cân bằng</label>
+              <label><input type="checkbox" name="no_repeat" checked={constraints.no_repeat} onChange={handleInputChange} /> 🔁 Không trùng món</label>
+            </div>
 
-              <div className="form-group">
-                <label>Thời gian nấu tối đa:</label>
-                <select name="max_cook_time" value={constraints.max_cook_time} onChange={handleInputChange}>
-                  <option value="">--Không giới hạn--</option>
-                  <option value="Dưới 15 phút">Dưới 15 phút</option>
-                  <option value="15 - 30 phút">15 - 30 phút</option>
-                  <option value="30 - 60 phút">30 - 60 phút</option>
-                </select>
-              </div>
+            <div className="meal-form-group">
+              <label>⏱️ Thời gian nấu tối đa</label>
+              <select name="max_cook_time" value={constraints.max_cook_time} onChange={handleInputChange}>
+                <option value="">-- Không giới hạn --</option>
+                <option value="Dưới 15 phút">Dưới 15 phút</option>
+                <option value="15 - 30 phút">15 - 30 phút</option>
+                <option value="30 - 60 phút">30 - 60 phút</option>
+              </select>
+            </div>
 
-              <div className="form-group">
-                <label>Loại bỏ nguyên liệu:</label>
-                <input type="text" placeholder="vd: tỏi, hành" onChange={(e) => handleArrayInput(e, 'exclude_ingredients')} />
-              </div>
+            <div className="meal-form-group">
+              <label>❌ Loại bỏ nguyên liệu</label>
+              <input type="text" placeholder="vd: tỏi, hành" onChange={(e) => handleArrayInput(e, 'exclude_ingredients')} />
+            </div>
 
-              <div className="form-group">
-                <label>Loại bỏ tags:</label>
-                <input type="text" placeholder="vd: chiên, ngọt" onChange={(e) => handleArrayInput(e, 'exclude_tags')} />
-              </div>
+            <div className="meal-form-group">
+              <label>🏷️ Loại bỏ tags</label>
+              <input type="text" placeholder="vd: chiên, ngọt" onChange={(e) => handleArrayInput(e, 'exclude_tags')} />
+            </div>
 
-              <div className="form-actions">
-                <button onClick={handleSuggest} disabled={loading}>
-                  {loading ? 'Đang gợi ý...' : 'Gợi ý thực đơn'}
-                </button>
-              </div>
+            <div className="meal-form-actions">
+              <button className="suggest-btn" onClick={handleSuggest} disabled={loading}>
+                {loading ? '⏳ Đang gợi ý...' : '✨ Gợi ý thực đơn'}
+              </button>
             </div>
           </div>
 
+          {/* ==== KẾT QUẢ ==== */}
           {error && <div className="error-box">❌ {error}</div>}
           {success && <div className="success-box">✅ Lưu thực đơn thành công!</div>}
 
           <h2 className="section-title">📋 Kết quả gợi ý</h2>
           <div className="recipe-grid">
             {suggestedPlans.map((plan, index) => (
-              <MealPlanCard key={index} plan={plan} />
+              <MealPlanCard
+                key={index}
+                plan={plan}
+                onDeleteMeal={(mealTime) => handleDeleteMeal(index, mealTime)}
+                onEditMeal={(mealTime, newRecipeId) => handleEditMeal(index, mealTime, newRecipeId)}
+              />
             ))}
           </div>
 
