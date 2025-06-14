@@ -47,11 +47,11 @@ async function extractFilters(prompt) {
 }
 
 router.post('/ask', async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ message: 'Thiếu prompt' });
+  const { messages, filters: incomingFilters } = req.body;
+  if (!messages || messages.length === 0) return res.status(400).json({ message: 'Thiếu messages' });
 
   try {
-    const filters = await extractFilters(prompt);
+    const filters = incomingFilters || await extractFilters(messages[messages.length - 1].content);
 
     let matchedRecipeIds = null;
 
@@ -81,33 +81,19 @@ router.post('/ask', async (req, res) => {
       ? { _id: { $in: matchedRecipeIds } }
       : {}; // lấy tất cả nếu không lọc được
 
-    // Truy vấn recipe
-
     const recipes = await Recipe.find(query).limit(100);
-
-    if (recipes.length === 0) {
-      const encoded = encodeURIComponent(prompt);
-      const googleLink = `https://www.google.com/search?q=${encoded}`;
-      return res.json({
-        reply: `Tôi chưa tìm được món phù hợp, bạn có thể thử xem ở đây: [Xem trên Google](${googleLink})`
-      });
-    }
-
     const recipeList = recipes.map(r => `- ${r.title}`).join('\n');
+
+    // Gắn danh sách món ăn vào messages
+    messages.push({
+      role: 'user',
+      content: `Danh sách món ăn có thể phù hợp:\n${recipeList}\nTrả lời dựa trên thông tin này. Nếu món ăn không có trong danh sách hãy gợi ý món ăn ngoài cũng được. Nếu câu hỏi không liên quan đến món ăn, hãy trả lời chung chung và gợi ý người dùng có muốn hỏi gì về món ăn không.`,
+    });
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'Bạn là trợ lý gợi ý món ăn thông minh, trả lời ngắn gọn và dễ hiểu bằng tiếng Việt.',
-        },
-        {
-          role: 'user',
-          content: `Người dùng hỏi: "${prompt}"\nMón ăn phù hợp:\n${recipeList}`
-        }
-      ],
-      temperature: 0.7
+      messages,
+      temperature: 0.7,
     });
 
     const reply = response.choices[0].message.content;

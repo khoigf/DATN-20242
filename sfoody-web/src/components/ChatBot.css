@@ -104,3 +104,21 @@ body.dark .chat-bubble.bot {
   font-weight: bold;
   font-size: 0.9rem;
 }
+.chat-actions {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.clear-button {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.clear-button:hover {
+  background-color: #d9363e;
+}

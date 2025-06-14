@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './HomePage.css'; // Reuse HomePage style
+import './HomePage.css';
 import Sidebar from '../components/HomeSidebar';
 import UserMenu from '../components/UserMenu';
 import NotificationBell from '../components/NotificationBell';
@@ -11,6 +11,7 @@ const BASE_URL = process.env.REACT_APP_API;
 const MealPlannerPage = () => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [constraints, setConstraints] = useState({
     days: 7,
@@ -26,7 +27,6 @@ const MealPlannerPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -71,12 +71,6 @@ const MealPlannerPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');    
-    navigate('/login');
-  };
-
   const handleConfirm = async () => {
     try {
       const res = await fetch(`${BASE_URL}/meal-plans`, {
@@ -98,35 +92,45 @@ const MealPlannerPage = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
+
   return (
     <div className="home-container">
       <header className="header">
         <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
-        <Link to="/"> 
+        <Link to="/">
           <h1 className="header-title">S-Foody</h1>
         </Link>
         <h1 className="header-title">Lập thực đơn</h1>
-        { token && (
-                  <div className="auth-actions">
-                    <UserMenu onLogout={handleLogout} />
-                    <NotificationBell token={token} />
-                  </div>)}
-                {!token && (
-                  <button className="login-button" onClick={() => navigate('/login')}>Đăng nhập</button>
-                )}
+        {token ? (
+          <div className="auth-actions">
+            <UserMenu onLogout={handleLogout} />
+            <NotificationBell token={token} />
+          </div>
+        ) : (
+          <button className="login-button" onClick={() => navigate('/login')}>Đăng nhập</button>
+        )}
       </header>
 
       <div className="home-content">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} token={token} role={role} />
 
         <main className="main-content">
-          <h2 className="section-title">Thiết lập yêu cầu</h2>
+          <h2 className="section-title">🔧 Thiết lập yêu cầu thực đơn</h2>
+
           <div className="suggestion-card">
             <div className="form-section">
-              <label>Số ngày:
+              <div className="form-group">
+                <label>Số ngày:</label>
                 <input type="number" name="days" value={constraints.days} onChange={handleInputChange} />
-              </label>
-              <label>Hồ sơ:
+              </div>
+
+              <div className="form-group">
+                <label>Hồ sơ:</label>
                 <select name="profile" value={constraints.profile} onChange={handleInputChange}>
                   <option value="">--Chọn--</option>
                   <option value="gym">Tập gym</option>
@@ -134,33 +138,45 @@ const MealPlannerPage = () => {
                   <option value="elder">Người cao tuổi</option>
                   <option value="child">Trẻ em</option>
                 </select>
-              </label>
-              <label><input type="checkbox" name="balance" checked={constraints.balance} onChange={handleInputChange} /> Cân bằng dinh dưỡng</label>
-              <label><input type="checkbox" name="no_repeat" checked={constraints.no_repeat} onChange={handleInputChange} /> Không trùng món</label>
-              <label>Thời gian nấu tối đa:
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label><input type="checkbox" name="balance" checked={constraints.balance} onChange={handleInputChange} /> Cân bằng dinh dưỡng</label>
+                <label><input type="checkbox" name="no_repeat" checked={constraints.no_repeat} onChange={handleInputChange} /> Không trùng món</label>
+              </div>
+
+              <div className="form-group">
+                <label>Thời gian nấu tối đa:</label>
                 <select name="max_cook_time" value={constraints.max_cook_time} onChange={handleInputChange}>
                   <option value="">--Không giới hạn--</option>
                   <option value="Dưới 15 phút">Dưới 15 phút</option>
                   <option value="15 - 30 phút">15 - 30 phút</option>
                   <option value="30 - 60 phút">30 - 60 phút</option>
                 </select>
-              </label>
-              <label>Loại bỏ nguyên liệu: 
+              </div>
+
+              <div className="form-group">
+                <label>Loại bỏ nguyên liệu:</label>
                 <input type="text" placeholder="vd: tỏi, hành" onChange={(e) => handleArrayInput(e, 'exclude_ingredients')} />
-              </label>
-              <label>Loại bỏ tags: 
+              </div>
+
+              <div className="form-group">
+                <label>Loại bỏ tags:</label>
                 <input type="text" placeholder="vd: chiên, ngọt" onChange={(e) => handleArrayInput(e, 'exclude_tags')} />
-              </label>
-              <button onClick={handleSuggest} disabled={loading}>
-                {loading ? 'Đang gợi ý...' : 'Gợi ý thực đơn'}
-              </button>
+              </div>
+
+              <div className="form-actions">
+                <button onClick={handleSuggest} disabled={loading}>
+                  {loading ? 'Đang gợi ý...' : 'Gợi ý thực đơn'}
+                </button>
+              </div>
             </div>
           </div>
 
-          {error && <div className="error-box">{error}</div>}
+          {error && <div className="error-box">❌ {error}</div>}
           {success && <div className="success-box">✅ Lưu thực đơn thành công!</div>}
 
-          <h2 className="section-title">Kết quả gợi ý</h2>
+          <h2 className="section-title">📋 Kết quả gợi ý</h2>
           <div className="recipe-grid">
             {suggestedPlans.map((plan, index) => (
               <MealPlanCard key={index} plan={plan} />
@@ -169,7 +185,7 @@ const MealPlannerPage = () => {
 
           {suggestedPlans.length > 0 && (
             <div className="load-more">
-              <button onClick={handleConfirm}>Xác nhận và lưu</button>
+              <button onClick={handleConfirm}>✅ Xác nhận và lưu</button>
             </div>
           )}
         </main>
