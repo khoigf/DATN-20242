@@ -41,35 +41,35 @@
     color: white;
   }
   /*Dark mode styles*/
-  body.dark-mode .confirm-box {
+  body.dark .confirm-box {
     background: #333;
     color: #f0f0f0;
   }
-  body.dark-mode .confirm-btn {
+  body.dark .confirm-btn {
     background-color: #555;
     color: #f0f0f0;
   }
-  body.dark-mode .confirm-btn.danger {
+  body.dark .confirm-btn.danger {
     background-color: #e74c3c;
     color: white;
   }
-  body.dark-mode .confirm-overlay {
+  body.dark .confirm-overlay {
     background: rgba(0, 0, 0, 0.6);
   }
-  body.dark-mode .confirm-actions {
+  body.dark .confirm-actions {
     gap: 16px;
   }
-  body.dark-mode .confirm-btn {
+  body.dark .confirm-btn {
     background-color: #444;
     color: #f0f0f0;
   }
-  body.dark-mode .confirm-btn.danger {
+  body.dark .confirm-btn.danger {
     background-color: #e74c3c;
     color: white;
   }
-  body.dark-mode .confirm-btn:hover {
+  body.dark .confirm-btn:hover {
     background-color: #555;
   }
-  body.dark-mode .confirm-btn.danger:hover {
+  body.dark .confirm-btn.danger:hover {
     background-color: #c0392b;
   }

@@ -24,7 +24,7 @@ exports.getMealPlan = async (req, res) => {
     if (type) query.type = type;
     if (date) query.date = date;
 
-    const plans = await MealPlan.find(query).populate('meals.recipe_id').sort({ createdAt: -1 });
+    const plans = await MealPlan.find(query).sort({ createdAt: -1 });
     res.status(200).json(plans);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -33,7 +33,7 @@ exports.getMealPlan = async (req, res) => {
 
 exports.getMealPlanById = async (req, res) => {
   try {
-    const plan = await MealPlan.findById(req.params.id).populate('meals.recipe_id');
+    const plan = await MealPlan.findById(req.params.id);
     if (!plan) return res.status(404).json({ message: 'Meal plan not found' });
     res.status(200).json(plan);
   } catch (err) {
