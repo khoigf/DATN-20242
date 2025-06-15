@@ -318,15 +318,24 @@ exports.suggestRecipes = async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // ==== Tìm 1 meal plan có sẵn của tuần bắt đầu từ hôm nay ====
-    const existingPlans = await MealPlan.find({
+    // Tính ngày đầu tuần (thứ Hai)
+    const dayOfWeek = today.getDay(); // 0 = Chủ nhật
+    const diffToMonday = (dayOfWeek + 6) % 7;
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+    // Tính ngày bắt đầu tuần sau
+    const nextWeek = new Date(startOfWeek);
+    nextWeek.setDate(startOfWeek.getDate() + 7);
+
+    // Tìm plan trong khoảng tuần này
+    const existingPlan = await MealPlan.findOne({
       user_id: userId,
       type: 'weekly',
-      date: today
-    }).limit(1);
-
-    if (existingPlans.length > 0) {
-      return res.status(200).json({ plan: existingPlans[0] });
+      date: startOfWeek,
+    });
+    if (existingPlan) {
+      return res.status(200).json({ plan: existingPlan });
     }
 
     // ==== Lấy ID của các tag theo meal_time ====
@@ -381,7 +390,7 @@ exports.suggestRecipes = async (req, res) => {
     const newPlan = await MealPlan.create({
       user_id: userId,
       type: 'weekly',
-      date: today,
+      date: startOfWeek,
       meals
     });
 
