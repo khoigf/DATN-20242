@@ -344,6 +344,7 @@ body.dark .loader {
 .home-content {
   display: flex;
   flex: 1;
+  overflow: hidden;
 }
 
 .sidebar {

@@ -18,6 +18,8 @@ import PostList from './pages/PostList';
 import ReportList from './pages/ReportList';
 import MealPlannerPage from './pages/MealPlannerPage';
 import ChatBot from './components/Chatbot';
+import EditMealPlanPage from './pages/EditMealPlanPage';
+import ManageMealPlansPage from './pages/ManageMealPlansPage';
 
 function App() {
   const [showChat, setShowChat] = useState(false);
@@ -36,6 +38,8 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/meal-planner" element={<MealPlannerPage />} />
+        <Route path="/meal-plans/manage" element={<ManageMealPlansPage />} />
+        <Route path="/meal-plans/edit/:id" element={<EditMealPlanPage />} />
         {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserList />} />
