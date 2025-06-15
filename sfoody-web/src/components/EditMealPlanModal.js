@@ -5,7 +5,7 @@ import '../pages/HomePage.css';
 
 const BASE_URL = process.env.REACT_APP_API;
 
-const EditMealPlanModal = ({ plan, onClose, onUpdated }) => {
+const EditMealPlanModal = ({ plan, onClose, onSave }) => {
   const [mealsByDay, setMealsByDay] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [selectorInfo, setSelectorInfo] = useState(null);
@@ -89,7 +89,7 @@ const EditMealPlanModal = ({ plan, onClose, onUpdated }) => {
       });
 
       if (res.ok) {
-        onUpdated();
+        onSave(newMeals);
         onClose();
       } else {
         console.error('Cập nhật thất bại');

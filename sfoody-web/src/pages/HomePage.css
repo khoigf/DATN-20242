@@ -1290,3 +1290,41 @@ body.dark .recipe-option {
 body.dark .recipe-option:hover {
   background: #3b3b3b;
 }
+.secondary-btn {
+  background-color: #f3f3f3;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.secondary-btn:hover {
+  background-color: #e0e0e0;
+}
+body.dark .secondary-btn {
+  background-color: #444;
+  color: #f3f3f3;
+}
+body.dark .secondary-btn:hover {
+  background-color: #555;
+}
+.danger-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.danger-btn:hover {
+  background-color: #d32f2f;
+}
+body.dark .danger-btn {
+  background-color: #b71c1c;
+  color: #f3f3f3;
+}
+body.dark .danger-btn:hover {
+  background-color: #c62828;
+}
