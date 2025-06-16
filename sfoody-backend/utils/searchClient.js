@@ -1,9 +1,10 @@
 // utils/searchClient.js
 const { MeiliSearch } = require('meilisearch');
+require('dotenv').config();
 
 const client = new MeiliSearch({
-  host: 'http://127.0.0.1:7700',
-  apiKey: 'masterKey',
+  host: process.env.MEILISEARCH_HOST || 'http://127.0.0.1:7700',
+  apiKey: process.env.MEILISEARCH_API_KEY || 'masterKey',
 });
 
 // ⚙️ Thiết lập searchableAttributes cho index 'recipes'
