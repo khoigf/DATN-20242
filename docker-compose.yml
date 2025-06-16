@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  backend:
+    build: ./sfoody-backend
+    container_name: sfoody-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./sfoody-backend/.env
+    volumes:
+      - ./sfoody-backend:/app
+    depends_on:
+      - frontend
+
+  frontend:
+    build: ./sfoody-web
+    container_name: sfoody-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    env_file:
+      - ./sfoody-web/.env
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: sfoody-meilisearch
+    restart: always
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=masterKey
+    volumes:
+      - meili_data:/meili_data
+
+volumes:
+  meili_data:
