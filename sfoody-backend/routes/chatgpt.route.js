@@ -111,7 +111,7 @@ router.post('/ask', async (req, res) => {
       role: 'user',
       content:
         `Danh sách món ăn có thể phù hợp:\n${recipeList}\n` +
-        `Trả lời dựa trên thông tin này. Nếu món ăn không có trong danh sách, có thể gợi ý món khác. ` +
+        `Trả lời đưa ra các món ăn dựa trên thông tin này, bắt đầu với từ "Các món ăn phù hợp ...". Nếu món ăn không có trong danh sách, có thể gợi ý món khác. ` +
         `Nếu câu hỏi không liên quan đến món ăn, hãy trả lời chung và gợi ý người dùng hỏi về món ăn.`
     });
 
