@@ -111,14 +111,27 @@ router.post('/ask', async (req, res) => {
       role: 'user',
       content:
         `Danh sách món ăn có thể phù hợp:\n${recipeList}\n` +
-        `Trả lời đưa ra các món ăn dựa trên thông tin này, bắt đầu với từ "Các món ăn phù hợp ...". Nếu món ăn không có trong danh sách, có thể gợi ý món khác. ` +
-        `Nếu câu hỏi không liên quan đến món ăn, hãy trả lời chung và gợi ý người dùng hỏi về món ăn.`
+        `Trả lời đưa ra các món ăn dựa trên danh sách này. Nếu món ăn không có trong danh sách, có thể gợi ý món khác ngoài danh sách`
     });
+
+    const baseSystemPrompt = {
+      role: 'system',
+      content: `
+    Bạn là một đầu bếp tư vấn món ăn thông minh và thân thiện, có kiến thức sâu rộng về ẩm thực và dinh dưỡng.
+    Hãy trả lời các câu hỏi của người dùng bằng tiếng Việt một cách tự nhiên, dễ hiểu và đưa ra các gợi ý món ăn phù hợp với ngữ cảnh.
+    Khi gợi ý món ăn, hãy cân nhắc các yếu tố như sức khỏe, sở thích, nguyên liệu có sẵn, thời gian chuẩn bị và dịp cụ thể.
+    Không trả lời các câu hỏi ngoài lĩnh vực ẩm thực. Nếu không chắc chắn, hãy từ chối một cách lịch sự.
+      `.trim()
+    };
+
+    // Thêm vào đầu messages nếu chưa có
+    const finalMessages = [baseSystemPrompt, ...messages];
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages,
-      temperature: 0.7
+      messages: finalMessages,
+      temperature: 0.7,
+      max_tokens: 500
     });
 
     const reply = response?.choices?.[0]?.message?.content;
