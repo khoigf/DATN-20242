@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["sh", "-c", "node ./scripts/syncToMeili.js && npm start"]

@@ -13,7 +13,7 @@ const getFullImageUrl = (imagePath) => {
 };
 
 // Kết nối MongoDB
-mongoose.connect('mongodb+srv://root:8KPVZpgNIqnIq2gP@cluster0.ipujnzr.mongodb.net/Sfoody', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

@@ -1,6 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -19,10 +18,27 @@ import ReportList from './pages/ReportList';
 import MealPlannerPage from './pages/MealPlannerPage';
 import ChatBot from './components/Chatbot';
 
-function App() {
+function AppWrapper() {
+  const location = useLocation();
   const [showChat, setShowChat] = useState(false);
+
+  // Các path không hiển thị chatbot
+  const hiddenChatPaths = [
+    '/login',
+    '/register',
+    '/verify',
+    '/forgot-password',
+    '/reset-password',
+    '/admin',
+    '/admin/users',
+    '/admin/posts',
+    '/admin/reports',
+  ];
+
+  const shouldHideChat = hiddenChatPaths.some((path) => location.pathname.startsWith(path));
+
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -36,14 +52,24 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/meal-planner" element={<MealPlannerPage />} />
-        {/* Admin routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserList />} />
         <Route path="/admin/posts" element={<PostList />} />
         <Route path="/admin/reports" element={<ReportList />} />
       </Routes>
-      {showChat && <ChatBot />}
-      <button className="chatbot-toggle" onClick={() => setShowChat(!showChat)}>💬</button>
+
+      {!shouldHideChat && showChat && <ChatBot />}
+      {!shouldHideChat && (
+        <button className="chatbot-toggle" onClick={() => setShowChat(!showChat)}>💬</button>
+      )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppWrapper />
     </Router>
   );
 }
