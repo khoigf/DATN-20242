@@ -186,6 +186,9 @@ exports.suggestMealPlan = async (req, res) => {
             nutrition_tags = getNutritionTags(recipeTagMap[pick._id.toString()]).map(group => nutritionGroupLabels[group]);
             console.log(`Chọn món ${pick.title} cho ${mealTime} (${nutrition_tags.join(', ')})`);
             reason = 'Không có món đủ 3 nhóm, dùng món đủ 2 nhóm';
+            if (!nutrition_tags.includes('Tinh bột')) {
+              reason += ' (Thiếu tinh bột, nên ăn kèm cơm hoặc khoai)';
+            }
           } else {
             reason = 'Không có món phù hợp (ít nhất 2 nhóm dinh dưỡng)';
           }
