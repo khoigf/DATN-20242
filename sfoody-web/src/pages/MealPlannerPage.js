@@ -262,13 +262,57 @@ const MealPlannerPage = () => {
             </div>
             <div className="suggested-column">
               <h2 className="section-title">📋 Kết quả gợi ý</h2>
-              <div className="recipe-grid">
+              <div className="suggested-plans">
                 {suggestedPlans.map((plan, index) => (
-                  <MealPlanCard
-                    key={index}
-                    plan={plan}
-                    onViewRecipe={(recipe) => setActiveRecipe(recipe)}
-                  />
+                  <div key={index} className="suggested-day">
+                    <h3>🗓️ Ngày {new Date(plan.date).toLocaleDateString('vi-VN')}</h3>
+                    <div className="suggested-meals">
+                      {plan.meals.map((meal, idx) => (
+                        <div key={idx} className="suggested-meal">
+                          <strong>{meal.meal_time === 'breakfast' ? '🍳 Sáng' : meal.meal_time === 'lunch' ? '🍛 Trưa' : '🍲 Tối'}:</strong>
+                          {meal.recipe_id ? (
+                            <div>
+                              <div
+                                className="Mrecipe-preview"
+                                onClick={() =>
+                                  setActiveRecipe(
+                                    meal.recipe,
+                                  )
+                                }
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <img
+                                  src={
+                                    meal.recipe.image_url || '/placeholder.png'
+                                  }
+                                  alt=""
+                                />
+                                <div>
+                                  <strong className="Mname">
+                                    {meal.recipe.title}
+                                  </strong>
+                                  <p>
+                                    ⏱{' '}
+                                    {
+                                    meal.recipe.cook_time
+                                    }{' '}
+                                    phút
+                                  </p>
+                                </div>
+                              </div>
+                              <span style={{ fontSize: '0.85em', color: 'green', marginLeft: '10px' }}>
+                                {meal.nutrition_tags?.length ? `✔️ Đạt: ${meal.nutrition_tags.join(', ')}` : ''}
+                              </span>
+                            </div>
+                          ) : (
+                            <div style={{ color: 'gray', fontStyle: 'italic' }}>
+                              ⚠️ Không có món phù hợp ({meal.reason || 'Không đủ nhóm dinh dưỡng'})
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
               {suggestedPlans.length > 0 && (

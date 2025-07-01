@@ -1328,3 +1328,33 @@ body.dark .danger-btn {
 body.dark .danger-btn:hover {
   background-color: #c62828;
 }
+.suggested-day {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #f9fafb;
+}
+
+.suggested-meal {
+  margin: 0.5rem 0;
+}
+
+.suggested-meal .link {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.suggested-meal .link:hover {
+  text-decoration: none;
+}
+body.dark .suggested-day {
+  background: #2c2c2c;
+  color: #f3f3f3;
+}
+body.dark .suggested-meal .link {
+  color: #60a5fa;
+}
+body.dark .suggested-meal .link:hover {
+  color: #3b82f6;
+}

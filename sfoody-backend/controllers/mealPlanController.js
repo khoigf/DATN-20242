@@ -68,7 +68,8 @@ exports.suggestMealPlan = async (req, res) => {
     const result = [];
     const usedRecipeIds = new Set();
     const user_id = req.user.id;
-    // Load all tags và tạo map
+
+    // Load tags
     const allTags = await Tag.find().lean();
     const tagByName = {};
     allTags.forEach(tag => {
@@ -76,29 +77,38 @@ exports.suggestMealPlan = async (req, res) => {
     });
     const getTagId = (name) => tagByName[name.toLowerCase()]?._id?.toString();
 
-    // Profile và nhóm dinh dưỡng
+    // Nutrition group map
+    const balanceNutritionGroups = {
+      carb: ['Giàu tinh bột'],
+      meat: ['Bò', 'Gà', 'Hải sản', 'Cá', 'Trứng', 'Lợn', 'Thịt rừng'],
+      veggie: ['Rau xanh', 'Củ', 'Trái cây', 'Giàu chất xơ'],
+    };
+    const nutritionGroupLabels = {
+      carb: 'Tinh bột',
+      meat: 'Chất đạm',
+      veggie: 'Chất xơ'
+    };
+    const nutritionGroupTagIds = {};
+    for (let group in balanceNutritionGroups) {
+      nutritionGroupTagIds[group] = balanceNutritionGroups[group].map(getTagId).filter(Boolean);
+    }
+
+    // User profile constraints
     const profileTagsMap = {
       gym: ['Nhiều protein', 'Tăng cơ'],
       sick: ['Ít chất béo', 'Tốt cho hệ tiêu hóa'],
       elder: ['Tốt cho tim mạch', 'Người cao tuổi'],
       child: ['Món ăn cho bé', 'Giàu vitamin'],
     };
-    const balanceNutritionGroups = {
-      carb: ['Giàu tinh bột', 'Ít tinh bột'],
-      meat: ['Bò', 'Gà', 'Hải sản', 'Cá', 'Trứng'],
-      veggie: ['Rau xanh', 'Củ', 'Trái cây'],
-    };
-
     const profileTagIds = constraints.profile ? profileTagsMap[constraints.profile]?.map(getTagId).filter(Boolean) : [];
     const excludeTagIds = (constraints.exclude_tags || []).map(String);
     const excludedIngredientIds = (constraints.exclude_ingredients || []).map(String);
     const cookTimeTagId = constraints.max_cook_time ? getTagId(constraints.max_cook_time) : null;
 
-    // Load công thức
+    // Load recipes
     const allRecipes = await Recipe.find({ status: 1 }).lean();
     const recipeIds = allRecipes.map(r => r._id.toString());
 
-    // Load tag gắn với từng công thức
     const allRecipeTags = await RecipeTag.find({ recipe_id: { $in: recipeIds } }).lean();
     const recipeTagMap = {};
     allRecipeTags.forEach(rt => {
@@ -108,7 +118,6 @@ exports.suggestMealPlan = async (req, res) => {
       recipeTagMap[rid].push(tid);
     });
 
-    // Load nguyên liệu gắn với công thức
     const allRecipeIngredients = await RecipeIngredient.find({ recipe_id: { $in: recipeIds } }).lean();
     const recipeIngMap = {};
     allRecipeIngredients.forEach(ri => {
@@ -117,6 +126,7 @@ exports.suggestMealPlan = async (req, res) => {
       recipeIngMap[rid].push(ri.ingredient_id.toString());
     });
 
+    // Kiểm tra điều kiện từng công thức
     const filterRecipe = (r) => {
       const rid = r._id.toString();
       const tags = recipeTagMap[rid] || [];
@@ -129,79 +139,77 @@ exports.suggestMealPlan = async (req, res) => {
       return true;
     };
 
-    const nutritionGroupTagIds = {};
-    for (let group in balanceNutritionGroups) {
-      nutritionGroupTagIds[group] = balanceNutritionGroups[group].map(getTagId).filter(Boolean);
-    }
-
-    const isBalanced = constraints.balance === true;
-
-    const pickBalanced = (available) => {
-      const used = new Set(), picks = [], selected = {};
-
-      for (let group of ['carb', 'meat', 'veggie']) {
-        const options = available.filter(r => {
-          const tags = recipeTagMap[r._id.toString()] || [];
-          return !used.has(r._id.toString()) && tags.some(t => nutritionGroupTagIds[group].includes(t));
-        });
-        if (options.length) {
-          const pick = options[Math.floor(Math.random() * options.length)];
-          selected[group] = pick;
-          used.add(pick._id.toString());
-        }
+    const getNutritionTags = (tagIds = []) => {
+      const result = [];
+      for (const [group, ids] of Object.entries(nutritionGroupTagIds)) {
+        if (tagIds.some(tid => ids.includes(tid))) result.push(group);
       }
-
-      for (let g of ['carb', 'meat', 'veggie']) {
-        if (selected[g]) picks.push(selected[g]);
-      }
-
-      while (picks.length < 3) {
-        const remaining = available.filter(r => !used.has(r._id.toString()));
-        if (!remaining.length) break;
-        const pick = remaining[Math.floor(Math.random() * remaining.length)];
-        picks.push(pick);
-        used.add(pick._id.toString());
-      }
-
-      return picks;
+      return result;
     };
 
     const today = new Date();
 
     for (let i = 0; i < days; i++) {
-      let available = allRecipes.filter(r => !usedRecipeIds.has(r._id.toString()) && filterRecipe(r));
-      console.log(`📆 Ngày ${i + 1}: Có ${available.length} công thức hợp lệ`);
+      const dayDate = new Date(today.getTime() + i * 86400000);
+      const dailyMeals = [];
 
-      let picks = isBalanced ? pickBalanced(available) : [];
+      for (let mealTime of mealsPerDay) {
+        const available = allRecipes.filter(r => {
+          const rid = r._id.toString();
+          if (usedRecipeIds.has(rid) && constraints.no_repeat) return false;
+          return filterRecipe(r);
+        });
 
-      if (!isBalanced) {
-        while (picks.length < 3 && available.length) {
-          const pick = available.shift();
-          if (!constraints.no_repeat || !usedRecipeIds.has(pick._id.toString())) {
-            picks.push(pick);
-            usedRecipeIds.add(pick._id.toString());
+        let pick = null;
+        let nutrition_tags = [];
+        let reason = null;
+
+        // Ưu tiên món đủ cả 3 nhóm
+        const perfectMatches = available.filter(r => {
+          const tags = recipeTagMap[r._id.toString()] || [];
+          const matched = getNutritionTags(tags);
+          return matched.length === 3;
+        });
+
+        if (perfectMatches.length > 0) {
+          pick = perfectMatches[Math.floor(Math.random() * perfectMatches.length)];
+          nutrition_tags = getNutritionTags(recipeTagMap[pick._id.toString()]).map(group => nutritionGroupLabels[group]);;
+        } else {
+          // fallback: >= 2 nhóm
+          const partialMatches = available.filter(r => {
+            const tags = recipeTagMap[r._id.toString()] || [];
+            const matched = getNutritionTags(tags);
+            return matched.length >= 2;
+          });
+          if (partialMatches.length > 0) {
+            pick = partialMatches[Math.floor(Math.random() * partialMatches.length)];
+            nutrition_tags = getNutritionTags(recipeTagMap[pick._id.toString()]).map(group => nutritionGroupLabels[group]);
+            console.log(`Chọn món ${pick.title} cho ${mealTime} (${nutrition_tags.join(', ')})`);
+            reason = 'Không có món đủ 3 nhóm, dùng món đủ 2 nhóm';
+          } else {
+            reason = 'Không có món phù hợp (ít nhất 2 nhóm dinh dưỡng)';
           }
         }
-      }
 
-      while (picks.length < 3) {
-        const fallback = allRecipes.filter(r => !usedRecipeIds.has(r._id.toString()) && filterRecipe(r));
-        if (!fallback.length) break;
-        const pick = fallback[Math.floor(Math.random() * fallback.length)];
-        picks.push(pick);
-        usedRecipeIds.add(pick._id.toString());
+        if (pick) usedRecipeIds.add(pick._id.toString());
+        if (pick && pick.image_url) {
+          pick.image_url = "http://localhost:8080" + (pick.image_url);
+        }
+        dailyMeals.push({
+          meal_time: mealTime,
+          recipe_id: pick?._id || null,
+          recipe: pick || null,
+          title: pick?.title || null,
+          nutrition_tags,
+          reason,
+        });
       }
-
-      console.log('🍽️ Picks:', picks.map(p => p?.title || p?._id));
 
       result.push({
         user_id,
         type: constraints.type || 'daily',
-        date: new Date(today.getTime() + i * 86400000),
-        meals: mealsPerDay.map((mt, idx) => ({
-          meal_time: mt,
-          recipe_id: picks[idx]?._id || null
-        }))
+        date: dayDate,
+        meals: dailyMeals,
       });
     }
 
@@ -210,7 +218,7 @@ exports.suggestMealPlan = async (req, res) => {
       return res.status(201).json(inserted);
     }
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (e) {
     console.error('❌ Error in suggestMealPlan:', e);
     res.status(500).json({ message: e.message });

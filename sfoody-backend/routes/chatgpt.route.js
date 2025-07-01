@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const { OpenAI } = require('openai');
 
@@ -27,7 +28,7 @@ async function loadCache() {
 
 // Hàm tìm tag và ingredient trong câu hỏi
 async function extractFilters(prompt) {
-  await loadCache(); // ensure cache is loaded
+  await loadCache();
   const filters = {
     tagIds: [],
     excludeIngredientIds: [],
@@ -70,12 +71,30 @@ router.post('/ask', async (req, res) => {
 
     let matchedRecipeIds = null;
 
-    // Tag filtering
+    // ✅ Tag filtering (must match all tags)
     if (filters.tagIds.length > 0) {
-      matchedRecipeIds = await RecipeTag.find({ tag_id: { $in: filters.tagIds } }).distinct('recipe_id');
-    }
+      const recipeIdSets = await Promise.all(
+        filters.tagIds.map(tagId =>
+          RecipeTag.find({ tag_id: tagId }).distinct('recipe_id')
+        )
+      );
+      
+      // 2. Convert tất cả về string để so sánh an toàn
+      const recipeIdStrSets = recipeIdSets.map(set =>
+        set.map(id => id.toString())
+      );
 
-    // Include ingredient filtering
+      // 3. Lấy giao nhau của tất cả tập
+      matchedRecipeIds = recipeIdStrSets.reduce((acc, curr) =>
+        acc.filter(id => curr.includes(id))
+      );
+
+      // 4. Convert lại ObjectId để truy vấn
+      matchedRecipeIds = matchedRecipeIds.map(id => new mongoose.Types.ObjectId(id));
+    }
+    console.log('Matched recipe IDs after tag filtering:', matchedRecipeIds);
+    console.log('Filters applied:', filters);
+    // ✅ Include ingredient filtering
     if (filters.includeIngredientIds.length > 0) {
       const recipeWithIngredients = await RecipeIngredient.find({
         ingredient_id: { $in: filters.includeIngredientIds }
@@ -86,7 +105,7 @@ router.post('/ask', async (req, res) => {
         : recipeWithIngredients;
     }
 
-    // Exclude ingredient filtering
+    // ✅ Exclude ingredient filtering
     if (filters.excludeIngredientIds.length > 0) {
       const recipeToExclude = await RecipeIngredient.find({
         ingredient_id: { $in: filters.excludeIngredientIds }
@@ -97,36 +116,123 @@ router.post('/ask', async (req, res) => {
         : await Recipe.find({ _id: { $nin: recipeToExclude } }).distinct('_id');
     }
 
-    let recipes;
-    if (matchedRecipeIds && matchedRecipeIds.length > 0) {
-      recipes = await Recipe.find({ _id: { $in: matchedRecipeIds } }).limit(100);
-    } else {
-      // fallback random sample
-      recipes = await Recipe.aggregate([{ $sample: { size: 10 } }]);
+    // 🔎 Truy vấn recipe cuối cùng
+    if (matchedRecipeIds && matchedRecipeIds.length === 0) {
+      return res.json({
+        reply: '❌ Không tìm thấy món ăn nào phù hợp với tất cả yêu cầu của bạn. Vui lòng thử lại với yêu cầu khác.'
+      });
     }
 
-    const recipeList = recipes.map(r => `- ${r.title}`).join('\n');
+    let recipes;
+    if (matchedRecipeIds && matchedRecipeIds.length > 0) {
+      recipes = await Recipe.aggregate([
+        { $match: { _id: { $in: matchedRecipeIds } } },
+        { $limit: 100 },
 
-    messages.push({
-      role: 'user',
-      content:
-        `Danh sách món ăn có thể phù hợp:\n${recipeList}\n` +
-        `Trả lời đưa ra các món ăn dựa trên danh sách này. Nếu món ăn không có trong danh sách, có thể gợi ý món khác ngoài danh sách`
-    });
+        // Join recipe_tags → tags
+        {
+          $lookup: {
+            from: 'recipetags',
+            localField: '_id',
+            foreignField: 'recipe_id',
+            as: 'recipe_tags'
+          }
+        },
+        {
+          $lookup: {
+            from: 'tags',
+            localField: 'recipe_tags.tag_id',
+            foreignField: '_id',
+            as: 'tags'
+          }
+        },
+
+        // Join recipe_ingredients → ingredients
+        {
+          $lookup: {
+            from: 'recipeingredients',
+            localField: '_id',
+            foreignField: 'recipe_id',
+            as: 'recipe_ingredients'
+          }
+        },
+        {
+          $lookup: {
+            from: 'ingredients',
+            localField: 'recipe_ingredients.ingredient_id',
+            foreignField: '_id',
+            as: 'ingredients'
+          }
+        }
+      ]);
+    } else {
+      recipes = await Recipe.aggregate([
+        { $sample: { size: 100 } },
+
+        {
+          $lookup: {
+            from: 'recipetags',
+            localField: '_id',
+            foreignField: 'recipe_id',
+            as: 'recipe_tags'
+          }
+        },
+        {
+          $lookup: {
+            from: 'tags',
+            localField: 'recipe_tags.tag_id',
+            foreignField: '_id',
+            as: 'tags'
+          }
+        },
+        {
+          $lookup: {
+            from: 'recipeingredients',
+            localField: '_id',
+            foreignField: 'recipe_id',
+            as: 'recipe_ingredients'
+          }
+        },
+        {
+          $lookup: {
+            from: 'ingredients',
+            localField: 'recipe_ingredients.ingredient_id',
+            foreignField: '_id',
+            as: 'ingredients'
+          }
+        }
+      ]);
+    }
+    // Gộp danh sách món ăn để gửi kèm prompt
+    const recipeList = recipes.map(r => {
+      const tagNames = (r.tags || []).map(tag => tag.name).join(', ');
+      const ingredients = (r.ingredients || []).map(i => i.name).join(', ');
+      return `- ${r.title}\n  Tags: ${tagNames}\n  Nguyên liệu: ${ingredients}`;
+    }).join('\n\n');
+
+    const userRequest = messages[messages.length - 1].content;
+    const fullPrompt = `
+${userRequest}
+
+Dưới đây là danh sách các món ăn phù hợp với yêu cầu trên (có kèm tag và nguyên liệu):
+
+${recipeList}
+
+Hãy phân tích kỹ và chỉ gợi ý các món thật sự phù hợp với yêu cầu. Không gợi ý món không có trong danh sách này.
+`.trim();
 
     const baseSystemPrompt = {
       role: 'system',
       content: `
-    Bạn là một đầu bếp tư vấn món ăn thông minh và thân thiện, có kiến thức sâu rộng về ẩm thực và dinh dưỡng.
-    Hãy trả lời các câu hỏi của người dùng bằng tiếng Việt một cách tự nhiên, dễ hiểu và đưa ra các gợi ý món ăn phù hợp với ngữ cảnh.
-    Khi gợi ý món ăn, hãy cân nhắc các yếu tố như sức khỏe, sở thích, nguyên liệu có sẵn, thời gian chuẩn bị và dịp cụ thể.
-    Không trả lời các câu hỏi ngoài lĩnh vực ẩm thực. Nếu không chắc chắn, hãy từ chối một cách lịch sự.
+Bạn là một đầu bếp tư vấn món ăn thông minh và thân thiện, có kiến thức sâu rộng về ẩm thực và dinh dưỡng.
+Hãy trả lời các câu hỏi của người dùng bằng tiếng Việt một cách tự nhiên, dễ hiểu và đưa ra các gợi ý món ăn phù hợp với ngữ cảnh.
+Khi gợi ý món ăn, hãy cân nhắc các yếu tố như sức khỏe, sở thích, nguyên liệu có sẵn, thời gian chuẩn bị và dịp cụ thể.
+Không trả lời các câu hỏi ngoài lĩnh vực ẩm thực. Nếu không chắc chắn, hãy từ chối một cách lịch sự.
       `.trim()
     };
 
-    // Thêm vào đầu messages nếu chưa có
-    const finalMessages = [baseSystemPrompt, ...messages];
-
+    const finalMessages = [baseSystemPrompt, { role: 'user', content: fullPrompt }];
+    console.log('Final messages sent to OpenAI:', finalMessages);
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: finalMessages,
