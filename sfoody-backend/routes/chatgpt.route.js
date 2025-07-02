@@ -117,12 +117,6 @@ router.post('/ask', async (req, res) => {
     }
 
     // 🔎 Truy vấn recipe cuối cùng
-    if (matchedRecipeIds && matchedRecipeIds.length === 0) {
-      return res.json({
-        reply: '❌ Không tìm thấy món ăn nào phù hợp với tất cả yêu cầu của bạn. Vui lòng thử lại với yêu cầu khác.'
-      });
-    }
-
     let recipes;
     if (matchedRecipeIds && matchedRecipeIds.length > 0) {
       recipes = await Recipe.aggregate([
@@ -167,7 +161,7 @@ router.post('/ask', async (req, res) => {
       ]);
     } else {
       recipes = await Recipe.aggregate([
-        { $sample: { size: 100 } },
+        { $sample: { size: 50 } },
 
         {
           $lookup: {
