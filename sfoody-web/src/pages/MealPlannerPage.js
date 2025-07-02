@@ -303,9 +303,11 @@ const MealPlannerPage = () => {
                               <span style={{ fontSize: '0.85em', color: 'green', marginLeft: '10px' }}>
                                 {meal.nutrition_tags?.length ? `✔️ Đạt: ${meal.nutrition_tags.join(', ')}` : ''}
                               </span>
-                              <span style={{ fontSize: '0.85em', color: 'red', marginLeft: '10px' }}>
-                                {meal.reason ? `Lý do: ${meal.reason}` : ''}
-                              </span>
+                              <div>
+                                <span style={{ fontSize: '0.85em', color: 'red', marginLeft: '10px' }}>
+                                  {meal.reason ? `Lý do: ${meal.reason}` : ''}
+                                </span>
+                              </div>
                             </div>
                           ) : (
                             <div style={{ color: 'gray', fontStyle: 'italic' }}>
